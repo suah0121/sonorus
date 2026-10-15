@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 # ---------------------------------------------------------
-# 1. 페이지 설정 & 완벽 가독성 보장 CSS
+# 1. 페이지 설정 & UI 가독성 최우선 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Streamlit 기본 UI 숨김 및 가독성 최우선 다크 네이비 테마 CSS
+# 깨진 아이콘 텍스트 숨김 및 시원한 가독성 테마
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -22,7 +22,7 @@ st.markdown("""
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
     }
 
-    /* Streamlit 기본 헤더 및 사이드바 상단 여백 완벽 제거 */
+    /* Streamlit 헤더 및 사이드바 상단 여백 완벽 제거 */
     header[data-testid="stHeader"], 
     footer, 
     div[data-testid="stSidebarCollapseButton"],
@@ -43,7 +43,7 @@ st.markdown("""
         max-width: 1400px !important;
     }
 
-    /* Input & Textarea 선명한 가독성 */
+    /* Input & Textarea 선명한 가독성 보장 */
     .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -64,37 +64,24 @@ st.markdown("""
         margin-bottom: 0.4rem !important;
     }
 
-    /* 버튼 가독성 완전 수정 (마우스 안 올려도 글자 항상 명확) */
-    .stButton>button {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    /* 하얀색 버튼 문제 해결: 마우스 안 올려도 글자 상시 선명 노출 */
+    .stButton>button, div[data-testid="stFormSubmitButton"]>button {
+        background: #4f46e5 !important;
         color: #ffffff !important;
+        font-size: 1rem !important;
         font-weight: 700 !important;
         border-radius: 8px !important;
         border: none !important;
-        padding: 0.65rem 1.2rem !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+        padding: 0.75rem 1.2rem !important;
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4) !important;
+        width: 100% !important;
     }
-    .stButton>button:hover {
-        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-    }
-
-    /* Expander(접기/펼치기) 배경 및 글자 가독성 수정 */
-    .streamlit-expanderHeader {
-        background-color: #1e293b !important;
-        color: #f8fafc !important;
-        border-radius: 8px !important;
-        border: 1px solid #334155 !important;
-        font-weight: 700 !important;
-    }
-    .streamlit-expanderContent {
-        background-color: #0f172a !important;
-        border: 1px solid #334155 !important;
-        border-top: none !important;
-        border-bottom-left-radius: 8px !important;
-        border-bottom-right-radius: 8px !important;
+    .stButton>button:hover, div[data-testid="stFormSubmitButton"]>button:hover {
+        background: #4338ca !important;
+        color: #ffffff !important;
     }
 
-    /* 커스텀 카드 & 헤더 스타일 */
+    /* 카드 커스텀 UI */
     .app-header {
         display: flex;
         justify-content: space-between;
@@ -206,7 +193,6 @@ def get_bids():
     conn.close()
     return df
 
-# 🚨 피드백 투찰 DB 저장 버그 완전 수정 완료
 def add_bid(user_name, user_team, target_team_id, amount, feedback):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -357,19 +343,33 @@ if current_phase == 'prep':
         else:
             for _, row in teams_df.iterrows():
                 is_my_team = (user_team == row['name'])
-                
-                with st.expander(f"📌 [팀명: {row['name']}] 프로젝트: {row['title']}", expanded=True):
-                    if is_admin or is_my_team:
-                        st.caption("✍️ 내용 수정 (내 팀 또는 관리자만 가능)")
-                        edit_title = st.text_input("주제 제목", value=row['title'], key=f"title_{row['id']}")
-                        edit_desc = st.text_area("설명 및 목표", value=row['description'], key=f"desc_{row['id']}")
-                        if st.button("수정 저장", key=f"btn_{row['id']}"):
+                card_class = "card card-myteam" if is_my_team else "card"
+                badge = "<span style='background:#f59e0b; color:#000; padding:2px 8px; border-radius:4px; font-size:0.8rem; font-weight:bold; float:right;'>우리 팀</span>" if is_my_team else ""
+
+                st.markdown(f"""
+                    <div class="{card_class}">
+                        <div style="font-size:1.2rem; font-weight:bold; color:#818cf8; margin-bottom:8px;">
+                            팀명: {row['name']} {badge}
+                        </div>
+                        <div style="font-size:1.1rem; font-weight:700; color:#ffffff; margin-bottom:6px;">
+                            주제: {row['title']}
+                        </div>
+                        <div style="color:#cbd5e1; font-size:0.95rem;">
+                            {row['description']}
+                        </div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+                if is_admin or is_my_team:
+                    with st.form(key=f"edit_form_{row['id']}"):
+                        edit_title = st.text_input("주제 제목 수정", value=row['title'], key=f"title_{row['id']}")
+                        edit_desc = st.text_area("설명 및 목표 수정", value=row['description'], key=f"desc_{row['id']}")
+                        if st.form_submit_button("✍️ 수정 내용 저장", use_container_width=True):
                             update_team_info(row['id'], edit_title, edit_desc)
                             st.success("저장되었습니다.")
                             st.rerun()
-                    else:
-                        st.markdown(f"#### 주제: {row['title']}")
-                        st.write(row['description'])
+
+                st.markdown("<br>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # STAGE 2: 실시간 아이디어 경매 진행
@@ -396,7 +396,7 @@ elif current_phase == 'auction':
                 st.markdown(f"""
                     <div class="{card_style}">
                         <div style="font-size:1.2rem; font-weight:bold; color:#ffffff; margin-bottom:6px;">
-                            [팀명: {row['name']}] 주제: {row['title']} {badge_html}
+                            팀명: {row['name']} | 주제: {row['title']} {badge_html}
                         </div>
                         <div style="color:#94a3b8; font-size:0.95rem; margin-bottom:12px;">{row['description']}</div>
                         <div style="font-size:0.85rem; color:#cbd5e1;">현재 누적 펀딩액</div>
@@ -475,7 +475,7 @@ elif current_phase == 'finished':
             rank = idx + 1
             st.markdown(f"""
                 <div class="card" style="border-left: 5px solid #818cf8;">
-                    <div style="font-size:1.1rem; font-weight:bold;">{rank}위 : [팀명: {row['팀']}] 주제: {row['주제']}</div>
+                    <div style="font-size:1.1rem; font-weight:bold;">{rank}위 : 팀명[{row['팀']}] — 주제: {row['주제']}</div>
                     <div style="font-size:1.3rem; font-weight:800; color:#f59e0b; margin-top:4px;">총 {row['총 펀딩액']:,} 소노 유치</div>
                 </div>
             """, unsafe_allow_html=True)
