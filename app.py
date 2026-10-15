@@ -3,10 +3,9 @@ import pandas as pd
 import sqlite3
 import time
 from datetime import datetime
-from streamlit_autorefresh import st_autorefresh
 
 # ---------------------------------------------------------
-# 1. 페이지 설정 & 실시간 자동 갱신 (2초 간격)
+# 1. 페이지 설정 & 실시간 반응형 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -15,10 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 부원들 화면을 2000ms(2초)마다 자동 새로고침하여 관리자 조작 실시간 동기화
-st_autorefresh(interval=2000, key="global_sync_counter")
-
-# CSS 스타일링
+# 화면 상단 여백 제거 및 가독성 다크 스타일
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -27,7 +23,6 @@ st.markdown("""
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
     }
 
-    /* Streamlit 기본 헤더 및 사이드바 상단 여백 완벽 제거 */
     header[data-testid="stHeader"], 
     footer, 
     div[data-testid="stSidebarCollapseButton"],
@@ -48,7 +43,6 @@ st.markdown("""
         max-width: 1400px !important;
     }
 
-    /* Input & Textarea 선명한 가독성 보장 */
     .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -65,7 +59,6 @@ st.markdown("""
         margin-bottom: 0.4rem !important;
     }
 
-    /* 버튼 스타일 */
     .stButton>button, div[data-testid="stFormSubmitButton"]>button {
         background: #4f46e5 !important;
         color: #ffffff !important;
@@ -82,7 +75,6 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 헤더 & 카드 UI */
     .app-header {
         display: flex;
         justify-content: space-between;
@@ -120,7 +112,6 @@ st.markdown("""
         background-color: #1c1917 !important;
     }
 
-    /* 카운트다운 연출 스타일 */
     .countdown-box {
         text-align: center;
         padding: 60px 20px;
@@ -142,7 +133,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. SQLite 데이터베이스 및 상태 관리
+# 2. SQLite 데이터베이스 관리
 # ---------------------------------------------------------
 DB_FILE = "auction_data.db"
 
@@ -224,18 +215,18 @@ def add_bid(user_name, user_team, target_team_id, amount, feedback):
     conn.commit()
     conn.close()
 
-def get_phase():
+def get_state(key, default="prep"):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT value FROM app_state WHERE key = 'phase'")
+    c.execute("SELECT value FROM app_state WHERE key = ?", (key,))
     row = c.fetchone()
     conn.close()
-    return row[0] if row else 'prep'
+    return row[0] if row else default
 
-def set_phase(new_phase):
+def set_state(key, value):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("REPLACE INTO app_state (key, value) VALUES ('phase', ?)", (new_phase,))
+    c.execute("REPLACE INTO app_state (key, value) VALUES (?, ?)", (key, str(value)))
     conn.commit()
     conn.close()
 
@@ -245,13 +236,31 @@ def reset_all_data():
     c.execute("DELETE FROM teams")
     c.execute("DELETE FROM bids")
     c.execute("REPLACE INTO app_state (key, value) VALUES ('phase', 'prep')")
+    c.execute("DELETE FROM app_state WHERE key = 'countdown_start'")
     conn.commit()
     conn.close()
 
 # ---------------------------------------------------------
-# 3. 상단 헤더 & 접속자 프로필
+# 3. 실시간 자동 동기화 엔진 (@st.fragment)
 # ---------------------------------------------------------
-current_phase = get_phase()
+@st.fragment(run_every=1)
+def live_sync_engine():
+    current_phase = get_state("phase", "prep")
+    last_phase = st.session_state.get("last_synced_phase", None)
+    
+    # 카운트다운 단계인 경우 매 초마다 UI 갱신
+    if current_phase == "countdown":
+        st.rerun()
+    elif last_phase != current_phase:
+        st.session_state["last_synced_phase"] = current_phase
+        st.rerun()
+
+live_sync_engine()
+
+# ---------------------------------------------------------
+# 4. 메인 애플리케이션
+# ---------------------------------------------------------
+current_phase = get_state("phase", "prep")
 
 phase_text = {
     'prep': 'STAGE 1 : 준비 및 팀 소개',
@@ -267,7 +276,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 내 프로필 & 관리자 영역
+# 접속자 데이터 & 잔액
 teams_df = get_teams()
 team_options = teams_df['name'].tolist() if not teams_df.empty else []
 
@@ -301,21 +310,23 @@ with col_p4:
     admin_pwd = st.text_input("관리자 암호", type="password", placeholder="sonorus123")
     is_admin = (admin_pwd == "sonorus123")
 
+# 관리자 제어 버튼
 if is_admin:
     st.success("🔒 관리자 권한 활성화됨")
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if current_phase == 'prep':
             if st.button("🚀 경매 시작하기 (카운트다운)", use_container_width=True):
-                set_phase('countdown')
+                set_state("countdown_start", time.time())
+                set_state("phase", "countdown")
                 st.rerun()
         elif current_phase in ['auction', 'countdown']:
             if st.button("🚨 경매 마감하기", use_container_width=True):
-                set_phase('finished')
+                set_state("phase", "finished")
                 st.rerun()
         elif current_phase == 'finished':
             if st.button("🔄 준비로 돌아가기", use_container_width=True):
-                set_phase('prep')
+                set_state("phase", "prep")
                 st.rerun()
     with c_btn2:
         if st.button("💥 전체 데이터 완전 초기화", use_container_width=True):
@@ -389,27 +400,26 @@ if current_phase == 'prep':
                 st.markdown("<br>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# STAGE 1.5: 5초 긴장감 카운트다운 화면!
+# STAGE 1.5: 5초 긴장감 타임스탬프 카운트다운 화면
 # ---------------------------------------------------------
 elif current_phase == 'countdown':
-    placeholder = st.empty()
+    start_time = float(get_state("countdown_start", time.time()))
+    elapsed = time.time() - start_time
+    remaining = max(0, int(5 - elapsed))
     
-    # 5초부터 1초까지 자동 카운트다운 연출
-    for count in range(5, 0, -1):
-        with placeholder.container():
-            st.markdown(f"""
-                <div class="countdown-box">
-                    <h2 style="color: #a5b4fc; margin:0;">🔥 실시간 아이디어 경매 시작 직전! 🔥</h2>
-                    <p style="color: #cbd5e1; font-size: 1.1rem; margin-top: 10px;">투자 전략을 최종 점검하세요!</p>
-                    <div class="countdown-number">{count}</div>
-                    <p style="color: #f59e0b; font-weight: bold;">초 후 경매장이 개장합니다...</p>
-                </div>
-            """, unsafe_allow_html=True)
-        time.sleep(1)
-    
-    # 카운트다운 종료 시 자동으로 경매(auction) 단계로 전환!
-    set_phase('auction')
-    st.rerun()
+    if remaining > 0:
+        st.markdown(f"""
+            <div class="countdown-box">
+                <h2 style="color: #a5b4fc; margin:0;">🔥 실시간 아이디어 경매 시작 직전! 🔥</h2>
+                <p style="color: #cbd5e1; font-size: 1.1rem; margin-top: 10px;">투자 전략을 최종 점검하세요!</p>
+                <div class="countdown-number">{remaining}</div>
+                <p style="color: #f59e0b; font-weight: bold;">초 후 경매장이 개장합니다...</p>
+            </div>
+        """, unsafe_allow_html=True)
+    else:
+        # 5초 종료 시 실시간 경매(auction) 상태로 자동 전환
+        set_state("phase", "auction")
+        st.rerun()
 
 # ---------------------------------------------------------
 # STAGE 2: 실시간 아이디어 경매 진행
@@ -488,61 +498,4 @@ elif current_phase == 'auction':
                 st.markdown(f"""
                     <div style="background:#1e293b; border:1px solid #334155; padding:12px; border-radius:8px; margin-bottom:10px;">
                         <div style="font-size:0.85rem; color:#94a3b8;">
-                            <strong style="color:#ffffff;">{bid['user_name']} ({bid['user_team']})</strong> ➔ <span style="color:#818cf8; font-weight:bold;">{target_name}</span>
-                        </div>
-                        <div style="font-size:1.1rem; font-weight:800; color:#f59e0b; margin:4px 0;">{bid['amount']:,} 소노</div>
-                        <div style="color:#cbd5e1; font-size:0.9rem;">"{bid['feedback']}"</div>
-                    </div>
-                """, unsafe_allow_html=True)
-
-# ---------------------------------------------------------
-# STAGE 3: 경매 마감 및 결과
-# ---------------------------------------------------------
-elif current_phase == 'finished':
-    st.subheader("🏆 경매 마감 및 최종 결과")
-
-    funding_summary = []
-    for _, row in teams_df.iterrows():
-        team_bids = bids_df[bids_df['target_team_id'] == row['id']]
-        total_funding = team_bids['amount'].sum() if not team_bids.empty else 0
-        funding_summary.append({"팀": row['name'], "주제": row['title'], "총 펀딩액": total_funding})
-    
-    summary_df = pd.DataFrame(funding_summary).sort_values(by="총 펀딩액", ascending=False) if funding_summary else pd.DataFrame()
-
-    st.markdown("### 🥇 팀별 펀딩 유치 순위")
-    if not summary_df.empty:
-        for idx, row in summary_df.reset_index(drop=True).iterrows():
-            rank = idx + 1
-            st.markdown(f"""
-                <div class="card" style="border-left: 5px solid #818cf8;">
-                    <div style="font-size:1.1rem; font-weight:bold;">{rank}위 : 팀명[{row['팀']}] — 주제: {row['주제']}</div>
-                    <div style="font-size:1.3rem; font-weight:800; color:#f59e0b; margin-top:4px;">총 {row['총 펀딩액']:,} 소노 유치</div>
-                </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    st.markdown("### 💎 최고 엔젤 투자자 순위")
-    if not bids_df.empty:
-        investor_df = bids_df.groupby(["user_name", "user_team"])["amount"].sum().reset_index()
-        investor_df = investor_df.sort_values(by="amount", ascending=False)
-        
-        for idx, row in investor_df.reset_index(drop=True).head(3).iterrows():
-            rank = idx + 1
-            st.markdown(f"""
-                <div style="background:#1e293b; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #334155;">
-                    <strong style="color:#818cf8;">{rank}위</strong> : {row['user_name']} ({row['user_team']}) — 총 <strong style="color:#f59e0b;">{row['amount']:,} 소노</strong> 집행
-                </div>
-            """, unsafe_allow_html=True)
-
-    st.markdown("---")
-
-    st.markdown("### 📥 전체 피드백 다운로드")
-    if not bids_df.empty:
-        csv_data = bids_df.to_csv(index=False).encode('utf-8-sig')
-        st.download_button(
-            label="📄 CSV 파일 다운로드",
-            data=csv_data,
-            file_name="sonorus_auction_feedbacks.csv",
-            mime="text/csv"
-        )
+                            <strong style="color:#ffffff;">{bid['user_name']} ({bid['user_team']})</strong> ➔ <span style="color:#81
