@@ -255,6 +255,7 @@ def reset_all_data():
     c.execute("DELETE FROM bids")
     c.execute("REPLACE INTO app_state (key, value) VALUES ('phase', 'prep')")
     c.execute("DELETE FROM app_state WHERE key = 'cd_start'")
+    c.execute("DELETE FROM app_state WHERE key = 'reveal_start'")
     conn.commit()
     conn.close()
 
@@ -271,7 +272,7 @@ def live_sync_and_countdown():
         st.session_state["last_synced_phase"] = current_phase
         st.rerun()
 
-    # 2) 카운트다운 진행 로직
+    # 2) 경매 시작 카운트다운 진행
     if current_phase == "countdown":
         try:
             cd_start = float(get_state("cd_start", time.time()))
@@ -294,6 +295,29 @@ def live_sync_and_countdown():
             set_state("phase", "auction")
             st.rerun()
 
+    # 3) 결과 집계 및 공개 카운트다운 연출
+    elif current_phase == "result_reveal":
+        try:
+            reveal_start = float(get_state("reveal_start", time.time()))
+        except (ValueError, TypeError):
+            reveal_start = time.time()
+            
+        elapsed = time.time() - reveal_start
+        remaining = max(0, int(5 - elapsed))
+        
+        if remaining > 0:
+            st.markdown(f"""
+                <div class="countdown-container" style="border-color:#f59e0b; box-shadow: 0 0 50px rgba(245, 158, 11, 0.5);">
+                    <h2 style="color: #f59e0b; margin:0; letter-spacing:1px;">🏆 최종 경매 결과 집계 완료! 🏆</h2>
+                    <p style="color: #cbd5e1; font-size: 1.15rem; margin-top: 10px;">과연 최고 펀딩 유치 팀과 투자 왕은 누구일까요?</p>
+                    <div class="countdown-digit" style="color:#ec4899; text-shadow: 0 0 30px rgba(236, 72, 153, 0.9);">{remaining}</div>
+                    <p style="color: #a5b4fc; font-weight: 800; font-size:1.1rem;">초 후 최종 시상식 결과가 공개됩니다...</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            set_state("phase", "finished")
+            st.rerun()
+
 # ---------------------------------------------------------
 # 4. 메인 대시보드
 # ---------------------------------------------------------
@@ -303,6 +327,7 @@ phase_badge = {
     'prep': 'STAGE 1 : 준비 및 팀 등록',
     'countdown': '⏳ 경매 개장 5초 전!',
     'auction': 'STAGE 2 : 실시간 경매 진행 중',
+    'result_reveal': '🏆 결과 발표 집계 중...',
     'finished': 'STAGE 3 : 최종 경매 결과'
 }.get(current_phase, 'STAGE 1')
 
@@ -356,10 +381,11 @@ if is_admin:
                 set_state("phase", "countdown")
                 st.rerun()
         elif current_phase in ['auction', 'countdown']:
-            if st.button("🚨 경매 마감 및 시상식", use_container_width=True):
-                set_state("phase", "finished")
+            if st.button("🚨 경매 마감 & 결과 발표 연출", use_container_width=True):
+                set_state("reveal_start", time.time())
+                set_state("phase", "result_reveal")
                 st.rerun()
-        elif current_phase == 'finished':
+        elif current_phase in ['finished', 'result_reveal']:
             if st.button("🔄 준비 화면으로 복귀", use_container_width=True):
                 set_state("phase", "prep")
                 st.rerun()
@@ -524,6 +550,12 @@ elif current_phase == 'auction':
                         <div style="color:#e2e8f0; font-size:0.9rem;">"{bid['feedback']}"</div>
                     </div>
                 """, unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# STAGE 2.5: 결과 집계 연출 화면 (프래그먼트 호출)
+# ---------------------------------------------------------
+elif current_phase == 'result_reveal':
+    live_sync_and_countdown()
 
 # ---------------------------------------------------------
 # STAGE 3: 경매 마감 및 결과 시상식
