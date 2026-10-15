@@ -259,18 +259,40 @@ def reset_all_data():
     conn.close()
 
 # ---------------------------------------------------------
-# 3. 실시간 동기화 엔진 (단계 변화 즉시 감지)
+# 3. 실시간 동기화 및 카운트다운 프래그먼트 엔진
 # ---------------------------------------------------------
 @st.fragment(run_every=1)
-def live_sync_engine():
+def live_sync_and_countdown():
     current_phase = get_state("phase", "prep")
     last_phase = st.session_state.get("last_synced_phase", None)
     
+    # 1) Phase 변화 시 전체 페이지 갱신
     if last_phase != current_phase:
         st.session_state["last_synced_phase"] = current_phase
         st.rerun()
 
-live_sync_engine()
+    # 2) 카운트다운 진행 로직
+    if current_phase == "countdown":
+        try:
+            cd_start = float(get_state("cd_start", time.time()))
+        except (ValueError, TypeError):
+            cd_start = time.time()
+            
+        elapsed = time.time() - cd_start
+        remaining = max(0, int(5 - elapsed))
+        
+        if remaining > 0:
+            st.markdown(f"""
+                <div class="countdown-container">
+                    <h2 style="color: #a5b4fc; margin:0; letter-spacing:1px;">🔥 SONORUS 아이디어 경매전 개장 직전! 🔥</h2>
+                    <p style="color: #cbd5e1; font-size: 1.15rem; margin-top: 10px;">투자 전략과 조건부 피드백을 준비하세요!</p>
+                    <div class="countdown-digit">{remaining}</div>
+                    <p style="color: #f59e0b; font-weight: 800; font-size:1.1rem;">초 후 실시간 경매장이 개장합니다...</p>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            set_state("phase", "auction")
+            st.rerun()
 
 # ---------------------------------------------------------
 # 4. 메인 대시보드
@@ -413,39 +435,16 @@ if current_phase == 'prep':
                 st.markdown("<br>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# STAGE 1.5: 5초 실시간 카운트다운 연출!
+# STAGE 1.5: 5초 카운트다운 화면 (프래그먼트 호출)
 # ---------------------------------------------------------
 elif current_phase == 'countdown':
-    try:
-        cd_start = float(get_state("cd_start", time.time()))
-    except (ValueError, TypeError):
-        cd_start = time.time()
-        
-    elapsed = time.time() - cd_start
-    remaining = int(5 - elapsed)
-    
-    cd_box = st.empty()
-    
-    if remaining > 0:
-        with cd_box.container():
-            st.markdown(f"""
-                <div class="countdown-container">
-                    <h2 style="color: #a5b4fc; margin:0; letter-spacing:1px;">🔥 SONORUS 아이디어 경매전 개장 직전! 🔥</h2>
-                    <p style="color: #cbd5e1; font-size: 1.15rem; margin-top: 10px;">투자 전략과 조건부 피드백을 준비하세요!</p>
-                    <div class="countdown-digit">{remaining}</div>
-                    <p style="color: #f59e0b; font-weight: 800; font-size:1.1rem;">초 후 실시간 경매장이 개장합니다...</p>
-                </div>
-            """, unsafe_allow_html=True)
-        time.sleep(1)
-        st.rerun()
-    else:
-        set_state("phase", "auction")
-        st.rerun()
+    live_sync_and_countdown()
 
 # ---------------------------------------------------------
 # STAGE 2: 실시간 아이디어 경매 진행
 # ---------------------------------------------------------
 elif current_phase == 'auction':
+    live_sync_and_countdown()
     st.subheader("🔨 실시간 라이브 경매 진행 중")
     st.caption("타 팀의 프로젝트에 펀딩을 진행하고 조건부 피드백을 남겨주세요. (자기 팀 투자 불가)")
 
@@ -530,6 +529,7 @@ elif current_phase == 'auction':
 # STAGE 3: 경매 마감 및 결과 시상식
 # ---------------------------------------------------------
 elif current_phase == 'finished':
+    live_sync_and_countdown()
     st.subheader("🏆 최종 경매 마감 및 리포트")
 
     funding_summary = []
