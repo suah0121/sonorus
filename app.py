@@ -248,7 +248,6 @@ def live_sync_engine():
     current_phase = get_state("phase", "prep")
     last_phase = st.session_state.get("last_synced_phase", None)
     
-    # 카운트다운 단계인 경우 매 초마다 UI 갱신
     if current_phase == "countdown":
         st.rerun()
     elif last_phase != current_phase:
@@ -417,7 +416,6 @@ elif current_phase == 'countdown':
             </div>
         """, unsafe_allow_html=True)
     else:
-        # 5초 종료 시 실시간 경매(auction) 상태로 자동 전환
         set_state("phase", "auction")
         st.rerun()
 
@@ -498,4 +496,61 @@ elif current_phase == 'auction':
                 st.markdown(f"""
                     <div style="background:#1e293b; border:1px solid #334155; padding:12px; border-radius:8px; margin-bottom:10px;">
                         <div style="font-size:0.85rem; color:#94a3b8;">
-                            <strong style="color:#ffffff;">{bid['user_name']} ({bid['user_team']})</strong> ➔ <span style="color:#81
+                            <strong style="color:#ffffff;">{bid['user_name']} ({bid['user_team']})</strong> ➔ <span style="color:#818cf8; font-weight:bold;">{target_name}</span>
+                        </div>
+                        <div style="font-size:1.1rem; font-weight:800; color:#f59e0b; margin:4px 0;">{bid['amount']:,} 소노</div>
+                        <div style="color:#cbd5e1; font-size:0.9rem;">"{bid['feedback']}"</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# STAGE 3: 경매 마감 및 결과
+# ---------------------------------------------------------
+elif current_phase == 'finished':
+    st.subheader("🏆 경매 마감 및 최종 결과")
+
+    funding_summary = []
+    for _, row in teams_df.iterrows():
+        team_bids = bids_df[bids_df['target_team_id'] == row['id']]
+        total_funding = team_bids['amount'].sum() if not team_bids.empty else 0
+        funding_summary.append({"팀": row['name'], "주제": row['title'], "총 펀딩액": total_funding})
+    
+    summary_df = pd.DataFrame(funding_summary).sort_values(by="총 펀딩액", ascending=False) if funding_summary else pd.DataFrame()
+
+    st.markdown("### 🥇 팀별 펀딩 유치 순위")
+    if not summary_df.empty:
+        for idx, row in summary_df.reset_index(drop=True).iterrows():
+            rank = idx + 1
+            st.markdown(f"""
+                <div class="card" style="border-left: 5px solid #818cf8;">
+                    <div style="font-size:1.1rem; font-weight:bold;">{rank}위 : 팀명[{row['팀']}] — 주제: {row['주제']}</div>
+                    <div style="font-size:1.3rem; font-weight:800; color:#f59e0b; margin-top:4px;">총 {row['총 펀딩액']:,} 소노 유치</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("### 💎 최고 엔젤 투자자 순위")
+    if not bids_df.empty:
+        investor_df = bids_df.groupby(["user_name", "user_team"])["amount"].sum().reset_index()
+        investor_df = investor_df.sort_values(by="amount", ascending=False)
+        
+        for idx, row in investor_df.reset_index(drop=True).head(3).iterrows():
+            rank = idx + 1
+            st.markdown(f"""
+                <div style="background:#1e293b; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #334155;">
+                    <strong style="color:#818cf8;">{rank}위</strong> : {row['user_name']} ({row['user_team']}) — 총 <strong style="color:#f59e0b;">{row['amount']:,} 소노</strong> 집행
+                </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("---")
+
+    st.markdown("### 📥 전체 피드백 다운로드")
+    if not bids_df.empty:
+        csv_data = bids_df.to_csv(index=False).encode('utf-8-sig')
+        st.download_button(
+            label="📄 CSV 파일 다운로드",
+            data=csv_data,
+            file_name="sonorus_auction_feedbacks.csv",
+            mime="text/csv"
+        )
