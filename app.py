@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 # ---------------------------------------------------------
-# 1. 페이지 기본 설정 & 깨진 위젯 요소 완벽 제거 CSS
+# 1. 페이지 기본 설정 & 네온 다크 스타일 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,35 +13,33 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Material Icons 폰트 로드 & 네온 사이버펑크 디자인 CSS
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined');
     
     * {
-        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif !important;
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
     }
 
-    /* 전체 배경 */
+    /* Streamlit 내부 아이콘 폰트 정상 출력 보장 */
+    .material-icons, .material-symbols-outlined, [class^="st-"] i, [data-testid="stIcon"] {
+        font-family: 'Material Icons' !important;
+    }
+
+    /* 전체 배경 - 딥 사이버 다크 */
     .stApp {
-        background-color: #0f172a !important;
+        background-color: #090d16 !important;
         color: #f8fafc !important;
     }
 
-    /* 상단 하얀색 헤더 바 및 깨진 아이콘 텍스트 제거 */
+    /* 상단 헤더 바 투명화 및 여백 조율 */
     header[data-testid="stHeader"] {
-        background-color: #0f172a !important;
+        background-color: #090d16 !important;
         border-bottom: none !important;
     }
     
-    /* 사이드바 접기/열기 버튼의 깨진 텍스트(keyboard_double_...) 숨기기 */
-    button[data-testid="stSidebarCollapseButton"], 
-    button[data-testid="baseButton-header"],
-    [data-testid="stHeader"] * {
-        color: #0f172a !important;
-        overflow: hidden !important;
-    }
-    
-    /* 본문 상단 여백 축소 */
     .main .block-container {
         padding-top: 1.5rem !important;
         padding-bottom: 2rem !important;
@@ -49,8 +47,8 @@ st.markdown("""
 
     /* 사이드바 스타일링 */
     section[data-testid="stSidebar"] {
-        background-color: #1e293b !important;
-        border-right: 1px solid #334155 !important;
+        background-color: #0f172a !important;
+        border-right: 1px solid #1e293b !important;
     }
     section[data-testid="stSidebar"] * {
         color: #f8fafc !important;
@@ -59,18 +57,22 @@ st.markdown("""
         color: #94a3b8 !important;
     }
 
-    /* Input/Textarea 가독성 및 비밀번호 보기 버튼 찌꺼기 제거 */
+    /* Input & Textarea 네온 포커스 스타일 */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #0f172a !important;
+        background-color: #090d16 !important;
         color: #f8fafc !important;
-        border: 1px solid #475569 !important;
-        border-radius: 8px !important;
+        border: 1px solid #334155 !important;
+        border-radius: 10px !important;
     }
-    
-    /* 비밀번호 우측 눈 아이콘 깨짐 방지 */
+    .stTextInput input:focus, .stTextArea textarea:focus {
+        border-color: #8b5cf6 !important;
+        box-shadow: 0 0 10px rgba(139, 92, 246, 0.5) !important;
+    }
+
+    /* 비밀번호 숨기기/보기 위젯 깨짐 수정 */
     .stTextInput div[data-baseweb="input"] {
-        background-color: #0f172a !important;
-        border-radius: 8px !important;
+        background-color: #090d16 !important;
+        border-radius: 10px !important;
     }
     .stTextInput button {
         background-color: transparent !important;
@@ -78,60 +80,68 @@ st.markdown("""
         color: #94a3b8 !important;
     }
 
-    /* 버튼 스타일 */
+    /* 네온 그래디언트 버튼 */
     .stButton>button {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+        background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         border: none !important;
-        padding: 0.6rem 1.2rem !important;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+        padding: 0.65rem 1.3rem !important;
+        box-shadow: 0 0 15px rgba(236, 72, 153, 0.4) !important;
+        transition: all 0.3s ease !important;
     }
     .stButton>button:hover {
-        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-        box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
+        transform: translateY(-2px) scale(1.01) !important;
+        box-shadow: 0 0 22px rgba(236, 72, 153, 0.7) !important;
     }
 
-    /* 카드 커스텀 UI */
+    /* 네온 카드 커스텀 UI */
     .glass-card {
-        background-color: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 20px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: 22px;
+        margin-bottom: 22px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        backdrop-filter: blur(8px);
     }
     .my-team-card {
-        border: 2px solid #f59e0b !important;
-        background-color: #1e2538 !important;
+        border: 1px solid #f59e0b !important;
+        box-shadow: 0 0 18px rgba(245, 158, 11, 0.35) !important;
+        background: linear-gradient(145deg, #0f172a 0%, #1c1917 100%) !important;
     }
 
-    /* 배지 및 태그 */
+    /* 배지 & 타이틀 네온 텍스트 효과 */
     .badge-myteam {
         background-color: #f59e0b;
-        color: #0f172a;
-        padding: 3px 8px;
-        border-radius: 4px;
+        color: #090d16;
+        padding: 4px 10px;
+        border-radius: 6px;
         font-size: 0.8rem;
-        font-weight: bold;
+        font-weight: 800;
         float: right;
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
     }
     .status-badge {
-        background-color: #334155;
-        color: #38bdf8;
-        padding: 4px 10px;
-        border-radius: 20px;
+        background: linear-gradient(90deg, #312e81 0%, #4338ca 100%);
+        color: #818cf8;
+        padding: 6px 14px;
+        border-radius: 30px;
         font-size: 0.85rem;
-        font-weight: 600;
+        font-weight: 700;
         display: inline-block;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
+        border: 1px solid #6366f1;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
     }
 
-    /* 헤더 텍스트 */
-    .brand-header {
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: #818cf8;
+    .brand-title {
+        font-size: 2.2rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #a855f7 0%, #ec4899 50%, #3b82f6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         letter-spacing: -0.5px;
         margin-bottom: 5px;
     }
@@ -139,10 +149,11 @@ st.markdown("""
         color: #94a3b8;
         font-size: 0.95rem;
     }
-    .accent-amount {
+    .neon-amount {
         color: #f59e0b;
-        font-weight: 800;
-        font-size: 1.4rem;
+        font-weight: 900;
+        font-size: 1.5rem;
+        text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -253,10 +264,10 @@ def set_phase(new_phase):
 # ---------------------------------------------------------
 # 3. 사이드바 UI
 # ---------------------------------------------------------
-st.sidebar.markdown("<div class='brand-header'>SONORUS</div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div class='brand-title' style='font-size:1.8rem;'>SONORUS</div>", unsafe_allow_html=True)
 st.sidebar.markdown("<div class='sub-text' style='margin-bottom:20px;'>아이디어 경매전 서비스</div>", unsafe_allow_html=True)
 
-# 참가자 등록
+# 참가자 프로필
 st.sidebar.markdown("#### 참가자 프로필")
 user_name = st.sidebar.text_input("이름", value=st.session_state.get("user_name", ""), placeholder="홍길동")
 
@@ -285,10 +296,10 @@ else:
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("<div class='sub-text'>보유 자산</div>", unsafe_allow_html=True)
-st.sidebar.markdown(f"<div class='accent-amount'>{my_balance:,} 소노</div>", unsafe_allow_html=True)
+st.sidebar.markdown(f"<div class='neon-amount'>{my_balance:,} 소노</div>", unsafe_allow_html=True)
 st.sidebar.caption("미사용 소노는 마감 시 자동 소멸됩니다.")
 
-# 관리자 메뉴
+# 관리자 콘솔
 st.sidebar.markdown("---")
 st.sidebar.markdown("<div class='sub-text'>관리자 콘솔</div>", unsafe_allow_html=True)
 ADMIN_PASSWORD = "sonorus123"
@@ -316,7 +327,7 @@ if is_admin:
 # ---------------------------------------------------------
 # 4. 메인 영역
 # ---------------------------------------------------------
-st.markdown("<div class='brand-header' style='font-size: 2.2rem;'>SONORUS 아이디어 경매전</div>", unsafe_allow_html=True)
+st.markdown("<div class='brand-title'>SONORUS 아이디어 경매전</div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # STAGE 1: 경매 준비
@@ -378,7 +389,7 @@ if current_phase == 'prep':
 # STAGE 2: 실시간 경매 진행
 # ---------------------------------------------------------
 elif current_phase == 'auction':
-    st.markdown("<div class='status-badge' style='color:#10b981; background:#064e3b;'>STAGE 2 : 실시간 경매 진행 중</div>", unsafe_allow_html=True)
+    st.markdown("<div class='status-badge' style='background: linear-gradient(90deg, #064e3b 0%, #047857 100%); color:#34d399; border-color:#10b981;'>STAGE 2 : 실시간 경매 진행 중</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-text' style='margin-bottom: 25px;'>타 팀 프로젝트에 펀딩금과 조건부 피드백을 전달해 주세요.</div>", unsafe_allow_html=True)
 
     col_teams, col_feed = st.columns([2, 1])
@@ -399,12 +410,12 @@ elif current_phase == 'auction':
 
                 st.markdown(f"""
                     <div class="{card_class}">
-                        <div style="font-size:1.2rem; font-weight:bold; color:#f8fafc; margin-bottom:4px;">
+                        <div style="font-size:1.25rem; font-weight:bold; color:#f8fafc; margin-bottom:6px;">
                             {row['name']} : {row['title']} {badge}
                         </div>
-                        <div style="color:#94a3b8; font-size:0.95rem; margin-bottom:12px;">{row['description']}</div>
-                        <div style="font-size:0.9rem; color:#cbd5e1;">현재 누적 펀딩금</div>
-                        <div class="accent-amount">{total_funding:,} 소노</div>
+                        <div style="color:#94a3b8; font-size:0.95rem; margin-bottom:14px;">{row['description']}</div>
+                        <div style="font-size:0.85rem; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.5px;">현재 누적 펀딩금</div>
+                        <div class="neon-amount">{total_funding:,} 소노</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -450,11 +461,11 @@ elif current_phase == 'auction':
                 target_team_name = target_team_rows['name'].values[0] if not target_team_rows.empty else "팀"
                 
                 st.markdown(f"""
-                    <div style="background:#1e293b; border:1px solid #334155; padding:12px; border-radius:8px; margin-bottom:10px;">
+                    <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 14px; border-radius: 12px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);">
                         <div style="font-size:0.85rem; color:#94a3b8;">
-                            <strong style="color:#f8fafc;">{bid['user_name']} ({bid['user_team']})</strong> ➔ <span style="color:#818cf8;">{target_team_name}</span>
+                            <strong style="color:#f8fafc;">{bid['user_name']} ({bid['user_team']})</strong> ➔ <span style="color:#a855f7; font-weight:bold;">{target_team_name}</span>
                         </div>
-                        <div style="color:#f59e0b; font-weight:bold; margin:3px 0;">{bid['amount']:,} 소노</div>
+                        <div class="neon-amount" style="font-size:1.1rem; margin:4px 0;">{bid['amount']:,} 소노</div>
                         <div style="color:#e2e8f0; font-size:0.9rem;">"{bid['feedback']}"</div>
                     </div>
                 """, unsafe_allow_html=True)
@@ -463,7 +474,7 @@ elif current_phase == 'auction':
 # STAGE 3: 경매 마감 및 결과
 # ---------------------------------------------------------
 elif current_phase == 'finished':
-    st.markdown("<div class='status-badge' style='color:#f87171; background:#451a1a;'>STAGE 3 : 경매 마감</div>", unsafe_allow_html=True)
+    st.markdown("<div class='status-badge' style='background: linear-gradient(90deg, #881337 0%, #9f1239 100%); color:#fda4af; border-color:#f43f5e;'>STAGE 3 : 경매 마감</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-text' style='margin-bottom: 25px;'>최종 경매 결과 및 팀별 피드백 수집 결과입니다.</div>", unsafe_allow_html=True)
 
     funding_summary = []
@@ -474,7 +485,7 @@ elif current_phase == 'finished':
     
     summary_df = pd.DataFrame(funding_summary).sort_values(by="총 펀딩액", ascending=False) if funding_summary else pd.DataFrame()
 
-    st.markdown("### 최고 펀딩 유치 팀 순위")
+    st.markdown("### 🏆 최고 펀딩 유치 팀 순위")
     
     if not summary_df.empty:
         for idx, row in summary_df.reset_index(drop=True).iterrows():
@@ -482,15 +493,15 @@ elif current_phase == 'finished':
             badge = "1위" if rank == 1 else ("2위" if rank == 2 else f"{rank}위")
             
             st.markdown(f"""
-                <div class="glass-card" style="border-left: 5px solid #818cf8;">
-                    <div style="font-size:1.1rem; font-weight:bold;">{badge} : {row['팀']} - {row['주제']}</div>
-                    <div class="accent-amount" style="margin-top:5px;">총 {row['총 펀딩액']:,} 소노 유치</div>
+                <div class="glass-card" style="border-left: 5px solid #ec4899; box-shadow: 0 0 15px rgba(236, 72, 153, 0.25);">
+                    <div style="font-size:1.15rem; font-weight:bold; color:#f8fafc;">{badge} : {row['팀']} - {row['주제']}</div>
+                    <div class="neon-amount" style="margin-top:6px;">총 {row['총 펀딩액']:,} 소노 유치</div>
                 </div>
             """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    st.markdown("### 엔젤 투자자 순위")
+    st.markdown("### 💎 엔젤 투자자 순위")
     if not bids_df.empty:
         investor_df = bids_df.groupby(["user_name", "user_team"])["amount"].sum().reset_index()
         investor_df = investor_df.sort_values(by="amount", ascending=False)
@@ -498,8 +509,8 @@ elif current_phase == 'finished':
         for idx, row in investor_df.reset_index(drop=True).head(3).iterrows():
             rank = idx + 1
             st.markdown(f"""
-                <div style="background:#1e293b; padding:12px; border-radius:8px; margin-bottom:8px; border:1px solid #334155;">
-                    <strong>{rank}위</strong> : {row['user_name']} ({row['user_team']}) — 총 <strong>{row['amount']:,} 소노</strong> 집행
+                <div style="background:#0f172a; padding:14px; border-radius:10px; margin-bottom:10px; border:1px solid #334155;">
+                    <strong style="color:#a855f7;">{rank}위</strong> : {row['user_name']} ({row['user_team']}) — 총 <strong style="color:#ec4899;">{row['amount']:,} 소노</strong> 집행
                 </div>
             """, unsafe_allow_html=True)
 
