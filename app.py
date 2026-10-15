@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 # ---------------------------------------------------------
-# 1. 페이지 기본 설정 & 네온 다크 스타일 CSS
+# 1. 페이지 기본 설정 & 찌꺼기 텍스트 완전 제거 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,19 +13,35 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Material Icons 폰트 로드 & 네온 사이버펑크 디자인 CSS
+# 문제의 keyboard_double 및 visibility 텍스트 강제 삭제 + 네온 다크 디자인
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-    @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined');
     
     * {
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
     }
 
-    /* Streamlit 내부 아이콘 폰트 정상 출력 보장 */
-    .material-icons, .material-symbols-outlined, [class^="st-"] i, [data-testid="stIcon"] {
-        font-family: 'Material Icons' !important;
+    /* 🚨 keyboard_double_left 및 깨진 아이콘 텍스트 완전 차단 🚨 */
+    button[data-testid="stSidebarCollapseButton"],
+    div[data-testid="collapsedControl"],
+    button[aria-label="Close"],
+    button[aria-label="Expand sidebar"],
+    header[data-testid="stHeader"] button {
+        display: none !important;
+        font-size: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* 비밀번호 입력창의 visibility... 문구 완전 제거 */
+    .stTextInput button[aria-label="Show password text"],
+    .stTextInput button[aria-label="Hide password text"],
+    .stTextInput div[data-testid="stInputIcon"] {
+        display: none !important;
+        font-size: 0 !important;
+        visibility: hidden !important;
     }
 
     /* 전체 배경 - 딥 사이버 다크 */
@@ -34,14 +50,14 @@ st.markdown("""
         color: #f8fafc !important;
     }
 
-    /* 상단 헤더 바 투명화 및 여백 조율 */
+    /* 상단 헤더 영역 투명화 */
     header[data-testid="stHeader"] {
-        background-color: #090d16 !important;
+        background-color: transparent !important;
         border-bottom: none !important;
     }
     
     .main .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 1.2rem !important;
         padding-bottom: 2rem !important;
     }
 
@@ -67,17 +83,6 @@ st.markdown("""
     .stTextInput input:focus, .stTextArea textarea:focus {
         border-color: #8b5cf6 !important;
         box-shadow: 0 0 10px rgba(139, 92, 246, 0.5) !important;
-    }
-
-    /* 비밀번호 숨기기/보기 위젯 깨짐 수정 */
-    .stTextInput div[data-baseweb="input"] {
-        background-color: #090d16 !important;
-        border-radius: 10px !important;
-    }
-    .stTextInput button {
-        background-color: transparent !important;
-        border: none !important;
-        color: #94a3b8 !important;
     }
 
     /* 네온 그래디언트 버튼 */
