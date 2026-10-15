@@ -23,7 +23,6 @@ st.markdown("""
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
     }
 
-    /* Streamlit 프레임워크 요소 완전 차단 */
     header[data-testid="stHeader"], 
     footer, 
     div[data-testid="stSidebarCollapseButton"],
@@ -44,7 +43,6 @@ st.markdown("""
         max-width: 1400px !important;
     }
 
-    /* 폼 입력 필드 고대비 가독성 보장 */
     .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
         background-color: #0f172a !important;
         color: #ffffff !important;
@@ -68,7 +66,6 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
 
-    /* 버튼 게이밍 그래디언트 */
     .stButton>button, div[data-testid="stFormSubmitButton"]>button {
         background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%) !important;
         color: #ffffff !important;
@@ -86,7 +83,6 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(236, 72, 153, 0.7) !important;
     }
 
-    /* 게임 전광판 커스텀 헤더 */
     .app-header {
         display: flex;
         justify-content: space-between;
@@ -118,7 +114,6 @@ st.markdown("""
         box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
     }
 
-    /* 대시보드 커스텀 카드 */
     .glass-card {
         background: rgba(15, 23, 42, 0.85);
         border: 1px solid #334155;
@@ -134,7 +129,6 @@ st.markdown("""
         background: linear-gradient(145deg, #0f172a 0%, #1c1917 100%) !important;
     }
 
-    /* 카운트다운 대형 네온 전광판 */
     .countdown-container {
         text-align: center;
         padding: 70px 20px;
@@ -146,17 +140,12 @@ st.markdown("""
         max-width: 750px;
     }
     .countdown-digit {
-        font-size: 7.5rem;
+        font-size: 8rem;
         font-weight: 900;
         color: #f59e0b;
         text-shadow: 0 0 30px rgba(245, 158, 11, 0.9), 0 0 60px rgba(236, 72, 153, 0.6);
-        margin: 15px 0;
+        margin: 10px 0;
         line-height: 1;
-    }
-    .neon-gold {
-        color: #f59e0b;
-        font-weight: 900;
-        text-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -270,23 +259,21 @@ def reset_all_data():
     conn.close()
 
 # ---------------------------------------------------------
-# 3. 실시간 동기화 프래그먼트 엔진 (@st.fragment)
+# 3. 실시간 동기화 엔진 (단계 변화 즉시 감지)
 # ---------------------------------------------------------
 @st.fragment(run_every=1)
 def live_sync_engine():
     current_phase = get_state("phase", "prep")
     last_phase = st.session_state.get("last_synced_phase", None)
     
-    if current_phase == "countdown":
-        st.rerun()
-    elif last_phase != current_phase:
+    if last_phase != current_phase:
         st.session_state["last_synced_phase"] = current_phase
         st.rerun()
 
 live_sync_engine()
 
 # ---------------------------------------------------------
-# 4. 헤더 영역 & 사용자 대시보드
+# 4. 메인 대시보드
 # ---------------------------------------------------------
 current_phase = get_state("phase", "prep")
 
@@ -426,26 +413,31 @@ if current_phase == 'prep':
                 st.markdown("<br>", unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# STAGE 1.5: 5초 긴장감 네온 전광판 카운트다운!
+# STAGE 1.5: 5초 실시간 카운트다운 연출!
 # ---------------------------------------------------------
 elif current_phase == 'countdown':
     try:
         cd_start = float(get_state("cd_start", time.time()))
-    except ValueError:
+    except (ValueError, TypeError):
         cd_start = time.time()
         
     elapsed = time.time() - cd_start
-    remaining = max(0, int(5 - elapsed))
+    remaining = int(5 - elapsed)
+    
+    cd_box = st.empty()
     
     if remaining > 0:
-        st.markdown(f"""
-            <div class="countdown-container">
-                <h2 style="color: #a5b4fc; margin:0; letter-spacing:1px;">🔥 SONORUS 아이디어 경매전 개장 직전! 🔥</h2>
-                <p style="color: #cbd5e1; font-size: 1.15rem; margin-top: 10px;">투자 전략과 조건부 피드백을 준비하세요!</p>
-                <div class="countdown-digit">{remaining}</div>
-                <p style="color: #f59e0b; font-weight: 800; font-size:1.1rem;">초 후 실시간 경매장이 개장합니다...</p>
-            </div>
-        """, unsafe_allow_html=True)
+        with cd_box.container():
+            st.markdown(f"""
+                <div class="countdown-container">
+                    <h2 style="color: #a5b4fc; margin:0; letter-spacing:1px;">🔥 SONORUS 아이디어 경매전 개장 직전! 🔥</h2>
+                    <p style="color: #cbd5e1; font-size: 1.15rem; margin-top: 10px;">투자 전략과 조건부 피드백을 준비하세요!</p>
+                    <div class="countdown-digit">{remaining}</div>
+                    <p style="color: #f59e0b; font-weight: 800; font-size:1.1rem;">초 후 실시간 경매장이 개장합니다...</p>
+                </div>
+            """, unsafe_allow_html=True)
+        time.sleep(1)
+        st.rerun()
     else:
         set_state("phase", "auction")
         st.rerun()
