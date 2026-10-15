@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 # ---------------------------------------------------------
-# 1. 페이지 기본 설정 & 찌꺼기 텍스트 완전 제거 CSS
+# 1. 페이지 기본 설정 & 사이드바 정상 노출 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,35 +13,13 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 문제의 keyboard_double 및 visibility 텍스트 강제 삭제 + 네온 다크 디자인
+# 사이드바 숨김 해제 및 네온 다크 디자인
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
     
     * {
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
-    }
-
-    /* 🚨 keyboard_double_left 및 깨진 아이콘 텍스트 완전 차단 🚨 */
-    button[data-testid="stSidebarCollapseButton"],
-    div[data-testid="collapsedControl"],
-    button[aria-label="Close"],
-    button[aria-label="Expand sidebar"],
-    header[data-testid="stHeader"] button {
-        display: none !important;
-        font-size: 0 !important;
-        width: 0 !important;
-        height: 0 !important;
-        visibility: hidden !important;
-    }
-
-    /* 비밀번호 입력창의 visibility... 문구 완전 제거 */
-    .stTextInput button[aria-label="Show password text"],
-    .stTextInput button[aria-label="Hide password text"],
-    .stTextInput div[data-testid="stInputIcon"] {
-        display: none !important;
-        font-size: 0 !important;
-        visibility: hidden !important;
     }
 
     /* 전체 배경 - 딥 사이버 다크 */
@@ -57,7 +35,7 @@ st.markdown("""
     }
     
     .main .block-container {
-        padding-top: 1.2rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 2rem !important;
     }
 
@@ -65,6 +43,8 @@ st.markdown("""
     section[data-testid="stSidebar"] {
         background-color: #0f172a !important;
         border-right: 1px solid #1e293b !important;
+        display: block !important;
+        visibility: visible !important;
     }
     section[data-testid="stSidebar"] * {
         color: #f8fafc !important;
