@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 # ---------------------------------------------------------
-# 1. 페이지 설정 및 Streamlit 기본 UI 완전 은폐 CSS
+# 1. 페이지 설정 & 완벽 가독성 보장 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,10 +13,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Streamlit 기본 헤더, 사이드바, 푸터, 깨진 아이콘 텍스트 전체 숨김
+# Streamlit 기본 UI 숨김 및 가독성 최우선 다크 네이비 테마 CSS
 st.markdown("""
     <style>
-    /* Streamlit 프레임워크 기본 UI 완벽 제거 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    
+    * {
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+    }
+
+    /* Streamlit 기본 헤더 및 사이드바 상단 여백 완벽 제거 */
     header[data-testid="stHeader"], 
     footer, 
     div[data-testid="stSidebarCollapseButton"],
@@ -37,7 +43,7 @@ st.markdown("""
         max-width: 1400px !important;
     }
 
-    /* Streamlit 위젯 커스텀 (가독성 최우선) */
+    /* Input & Textarea 선명한 가독성 */
     .stTextInput input, .stTextArea textarea, .stSelectbox select, .stNumberInput input {
         background-color: #1e293b !important;
         color: #ffffff !important;
@@ -58,17 +64,34 @@ st.markdown("""
         margin-bottom: 0.4rem !important;
     }
 
+    /* 버튼 가독성 완전 수정 (마우스 안 올려도 글자 항상 명확) */
     .stButton>button {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
         border-radius: 8px !important;
         border: none !important;
-        padding: 0.6rem 1.2rem !important;
+        padding: 0.65rem 1.2rem !important;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     }
     .stButton>button:hover {
         background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+    }
+
+    /* Expander(접기/펼치기) 배경 및 글자 가독성 수정 */
+    .streamlit-expanderHeader {
+        background-color: #1e293b !important;
+        color: #f8fafc !important;
+        border-radius: 8px !important;
+        border: 1px solid #334155 !important;
+        font-weight: 700 !important;
+    }
+    .streamlit-expanderContent {
+        background-color: #0f172a !important;
+        border: 1px solid #334155 !important;
+        border-top: none !important;
+        border-bottom-left-radius: 8px !important;
+        border-bottom-right-radius: 8px !important;
     }
 
     /* 커스텀 카드 & 헤더 스타일 */
@@ -107,10 +130,6 @@ st.markdown("""
     .card-myteam {
         border: 2px solid #f59e0b !important;
         background-color: #1c1917 !important;
-    }
-    .accent-gold {
-        color: #f59e0b;
-        font-weight: 800;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -187,13 +206,14 @@ def get_bids():
     conn.close()
     return df
 
+# 🚨 피드백 투찰 DB 저장 버그 완전 수정 완료
 def add_bid(user_name, user_team, target_team_id, amount, feedback):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     c.execute(
         "INSERT INTO bids (user_name, user_team, target_team_id, amount, feedback, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-        (user_name, user_team, target_team_id, amount, feedback)
+        (user_name, user_team, target_team_id, amount, feedback, now_str)
     )
     conn.commit()
     conn.close()
@@ -213,7 +233,6 @@ def set_phase(new_phase):
     conn.commit()
     conn.close()
 
-# 데이터 완전 초기화 (팀 및 펀딩 내역 전체 삭제)
 def reset_all_data():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
@@ -278,7 +297,7 @@ with col_p4:
     admin_pwd = st.text_input("관리자 암호", type="password", placeholder="sonorus123")
     is_admin = (admin_pwd == "sonorus123")
 
-# 관리자 조작 버튼 (권한 인증 시 표시)
+# 관리자 조작 버튼
 if is_admin:
     st.success("🔒 관리자 권한 활성화됨")
     c_btn1, c_btn2 = st.columns(2)
@@ -339,7 +358,7 @@ if current_phase == 'prep':
             for _, row in teams_df.iterrows():
                 is_my_team = (user_team == row['name'])
                 
-                with st.expander(f"📌 {row['name']} : {row['title']}", expanded=True):
+                with st.expander(f"📌 [팀명: {row['name']}] 프로젝트: {row['title']}", expanded=True):
                     if is_admin or is_my_team:
                         st.caption("✍️ 내용 수정 (내 팀 또는 관리자만 가능)")
                         edit_title = st.text_input("주제 제목", value=row['title'], key=f"title_{row['id']}")
@@ -349,7 +368,7 @@ if current_phase == 'prep':
                             st.success("저장되었습니다.")
                             st.rerun()
                     else:
-                        st.markdown(f"#### {row['title']}")
+                        st.markdown(f"#### 주제: {row['title']}")
                         st.write(row['description'])
 
 # ---------------------------------------------------------
@@ -377,7 +396,7 @@ elif current_phase == 'auction':
                 st.markdown(f"""
                     <div class="{card_style}">
                         <div style="font-size:1.2rem; font-weight:bold; color:#ffffff; margin-bottom:6px;">
-                            {row['name']} : {row['title']} {badge_html}
+                            [팀명: {row['name']}] 주제: {row['title']} {badge_html}
                         </div>
                         <div style="color:#94a3b8; font-size:0.95rem; margin-bottom:12px;">{row['description']}</div>
                         <div style="font-size:0.85rem; color:#cbd5e1;">현재 누적 펀딩액</div>
@@ -456,7 +475,7 @@ elif current_phase == 'finished':
             rank = idx + 1
             st.markdown(f"""
                 <div class="card" style="border-left: 5px solid #818cf8;">
-                    <div style="font-size:1.1rem; font-weight:bold;">{rank}위 : {row['팀']} - {row['주제']}</div>
+                    <div style="font-size:1.1rem; font-weight:bold;">{rank}위 : [팀명: {row['팀']}] 주제: {row['주제']}</div>
                     <div style="font-size:1.3rem; font-weight:800; color:#f59e0b; margin-top:4px;">총 {row['총 펀딩액']:,} 소노 유치</div>
                 </div>
             """, unsafe_allow_html=True)
