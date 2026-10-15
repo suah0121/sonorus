@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import time
 from datetime import datetime
+from streamlit_autorefresh import st_autorefresh
 
 # ---------------------------------------------------------
-# 1. 페이지 설정 & UI 가독성 최우선 CSS
+# 1. 페이지 설정 & 실시간 자동 갱신 (2초 간격)
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,7 +15,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 깨진 아이콘 텍스트 숨김 및 시원한 가독성 테마
+# 부원들 화면을 2000ms(2초)마다 자동 새로고침하여 관리자 조작 실시간 동기화
+st_autorefresh(interval=2000, key="global_sync_counter")
+
+# CSS 스타일링
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -22,7 +27,7 @@ st.markdown("""
         font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
     }
 
-    /* Streamlit 헤더 및 사이드바 상단 여백 완벽 제거 */
+    /* Streamlit 기본 헤더 및 사이드바 상단 여백 완벽 제거 */
     header[data-testid="stHeader"], 
     footer, 
     div[data-testid="stSidebarCollapseButton"],
@@ -52,10 +57,6 @@ st.markdown("""
         font-size: 1rem !important;
         padding: 0.6rem 0.8rem !important;
     }
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4) !important;
-    }
     
     label {
         color: #cbd5e1 !important;
@@ -64,7 +65,7 @@ st.markdown("""
         margin-bottom: 0.4rem !important;
     }
 
-    /* 하얀색 버튼 문제 해결: 마우스 안 올려도 글자 상시 선명 노출 */
+    /* 버튼 스타일 */
     .stButton>button, div[data-testid="stFormSubmitButton"]>button {
         background: #4f46e5 !important;
         color: #ffffff !important;
@@ -81,7 +82,7 @@ st.markdown("""
         color: #ffffff !important;
     }
 
-    /* 카드 커스텀 UI */
+    /* 헤더 & 카드 UI */
     .app-header {
         display: flex;
         justify-content: space-between;
@@ -117,6 +118,25 @@ st.markdown("""
     .card-myteam {
         border: 2px solid #f59e0b !important;
         background-color: #1c1917 !important;
+    }
+
+    /* 카운트다운 연출 스타일 */
+    .countdown-box {
+        text-align: center;
+        padding: 60px 20px;
+        background: radial-gradient(circle, #1e1b4b 0%, #0b0f19 100%);
+        border-radius: 20px;
+        border: 2px solid #6366f1;
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.4);
+        margin: 40px auto;
+        max-width: 700px;
+    }
+    .countdown-number {
+        font-size: 6rem;
+        font-weight: 900;
+        color: #f59e0b;
+        text-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+        margin: 20px 0;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -229,12 +249,13 @@ def reset_all_data():
     conn.close()
 
 # ---------------------------------------------------------
-# 3. 상단 헤더 & 접속자 데이터
+# 3. 상단 헤더 & 접속자 프로필
 # ---------------------------------------------------------
 current_phase = get_phase()
 
 phase_text = {
     'prep': 'STAGE 1 : 준비 및 팀 소개',
+    'countdown': '⏳ 경매 시작 카운트다운 중...',
     'auction': 'STAGE 2 : 실시간 경매 진행 중',
     'finished': 'STAGE 3 : 경매 마감 및 결과'
 }.get(current_phase, 'STAGE 1')
@@ -246,9 +267,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# 4. 내 프로필 & 관리자 제어 영역
-# ---------------------------------------------------------
+# 내 프로필 & 관리자 영역
 teams_df = get_teams()
 team_options = teams_df['name'].tolist() if not teams_df.empty else []
 
@@ -264,7 +283,6 @@ with col_p2:
     if user_team != "팀 선택":
         st.session_state["user_team"] = user_team
 
-# 내 잔액 계산
 INITIAL_BALANCE = 1000000
 bids_df = get_bids()
 
@@ -283,16 +301,15 @@ with col_p4:
     admin_pwd = st.text_input("관리자 암호", type="password", placeholder="sonorus123")
     is_admin = (admin_pwd == "sonorus123")
 
-# 관리자 조작 버튼
 if is_admin:
     st.success("🔒 관리자 권한 활성화됨")
     c_btn1, c_btn2 = st.columns(2)
     with c_btn1:
         if current_phase == 'prep':
-            if st.button("🚀 경매 시작하기", use_container_width=True):
-                set_phase('auction')
+            if st.button("🚀 경매 시작하기 (카운트다운)", use_container_width=True):
+                set_phase('countdown')
                 st.rerun()
-        elif current_phase == 'auction':
+        elif current_phase in ['auction', 'countdown']:
             if st.button("🚨 경매 마감하기", use_container_width=True):
                 set_phase('finished')
                 st.rerun()
@@ -308,7 +325,7 @@ if is_admin:
 st.markdown("---")
 
 # ---------------------------------------------------------
-# STAGE 1: 경매 준비 (팀 생성 및 주제 작성)
+# STAGE 1: 경매 준비
 # ---------------------------------------------------------
 if current_phase == 'prep':
     st.subheader("📢 팀별 주제 발표 및 작성")
@@ -370,6 +387,29 @@ if current_phase == 'prep':
                             st.rerun()
 
                 st.markdown("<br>", unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# STAGE 1.5: 5초 긴장감 카운트다운 화면!
+# ---------------------------------------------------------
+elif current_phase == 'countdown':
+    placeholder = st.empty()
+    
+    # 5초부터 1초까지 자동 카운트다운 연출
+    for count in range(5, 0, -1):
+        with placeholder.container():
+            st.markdown(f"""
+                <div class="countdown-box">
+                    <h2 style="color: #a5b4fc; margin:0;">🔥 실시간 아이디어 경매 시작 직전! 🔥</h2>
+                    <p style="color: #cbd5e1; font-size: 1.1rem; margin-top: 10px;">투자 전략을 최종 점검하세요!</p>
+                    <div class="countdown-number">{count}</div>
+                    <p style="color: #f59e0b; font-weight: bold;">초 후 경매장이 개장합니다...</p>
+                </div>
+            """, unsafe_allow_html=True)
+        time.sleep(1)
+    
+    # 카운트다운 종료 시 자동으로 경매(auction) 단계로 전환!
+    set_phase('auction')
+    st.rerun()
 
 # ---------------------------------------------------------
 # STAGE 2: 실시간 아이디어 경매 진행
