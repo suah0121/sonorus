@@ -4,7 +4,7 @@ import sqlite3
 from datetime import datetime
 
 # ---------------------------------------------------------
-# 1. 페이지 기본 설정 & HTML 앱 스타일 CSS
+# 1. 페이지 기본 설정 & 깨진 위젯 요소 완벽 제거 CSS
 # ---------------------------------------------------------
 st.set_page_config(
     page_title="SONORUS 아이디어 경매전",
@@ -13,7 +13,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 이전 HTML 시각적 퀄리티를 구현한 모던 네이비 테마 CSS
 st.markdown("""
     <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -28,6 +27,26 @@ st.markdown("""
         color: #f8fafc !important;
     }
 
+    /* 상단 하얀색 헤더 바 및 깨진 아이콘 텍스트 제거 */
+    header[data-testid="stHeader"] {
+        background-color: #0f172a !important;
+        border-bottom: none !important;
+    }
+    
+    /* 사이드바 접기/열기 버튼의 깨진 텍스트(keyboard_double_...) 숨기기 */
+    button[data-testid="stSidebarCollapseButton"], 
+    button[data-testid="baseButton-header"],
+    [data-testid="stHeader"] * {
+        color: #0f172a !important;
+        overflow: hidden !important;
+    }
+    
+    /* 본문 상단 여백 축소 */
+    .main .block-container {
+        padding-top: 1.5rem !important;
+        padding-bottom: 2rem !important;
+    }
+
     /* 사이드바 스타일링 */
     section[data-testid="stSidebar"] {
         background-color: #1e293b !important;
@@ -40,16 +59,23 @@ st.markdown("""
         color: #94a3b8 !important;
     }
 
-    /* Input/Textarea 가독성 보장 */
+    /* Input/Textarea 가독성 및 비밀번호 보기 버튼 찌꺼기 제거 */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
         background-color: #0f172a !important;
         color: #f8fafc !important;
         border: 1px solid #475569 !important;
         border-radius: 8px !important;
     }
-    .stTextInput input:focus, .stTextArea textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 1px #6366f1 !important;
+    
+    /* 비밀번호 우측 눈 아이콘 깨짐 방지 */
+    .stTextInput div[data-baseweb="input"] {
+        background-color: #0f172a !important;
+        border-radius: 8px !important;
+    }
+    .stTextInput button {
+        background-color: transparent !important;
+        border: none !important;
+        color: #94a3b8 !important;
     }
 
     /* 버튼 스타일 */
@@ -122,7 +148,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 2. SQLite 데이터베이스 (동시 접속 데이터 보장)
+# 2. SQLite 데이터베이스
 # ---------------------------------------------------------
 DB_FILE = "auction_data.db"
 
@@ -448,7 +474,7 @@ elif current_phase == 'finished':
     
     summary_df = pd.DataFrame(funding_summary).sort_values(by="총 펀딩액", ascending=False) if funding_summary else pd.DataFrame()
 
-    st.markdown("### 🏆 최고 펀딩 유치 팀 순위")
+    st.markdown("### 최고 펀딩 유치 팀 순위")
     
     if not summary_df.empty:
         for idx, row in summary_df.reset_index(drop=True).iterrows():
@@ -464,7 +490,7 @@ elif current_phase == 'finished':
 
     st.markdown("---")
 
-    st.markdown("### 💎 엔젤 투자자 순위")
+    st.markdown("### 엔젤 투자자 순위")
     if not bids_df.empty:
         investor_df = bids_df.groupby(["user_name", "user_team"])["amount"].sum().reset_index()
         investor_df = investor_df.sort_values(by="amount", ascending=False)
