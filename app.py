@@ -8,7 +8,7 @@ from datetime import datetime
 # 1. 페이지 설정 및 UI 스타일
 # ---------------------------------------------------------
 st.set_page_config(
-    page_title="프로젝트 경매전 - SONORUS",
+    page_title="SONORUS AUCTION | PIXEL QUEST",
     page_icon="🔨",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -16,231 +16,68 @@ st.set_page_config(
 
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-
-* {
-    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+:root {
+  --bg:#07112f; --panel:#0c1d4a; --panel2:#10275c; --line:#2d5eb8;
+  --text:#eaf4ff; --muted:#9bbbe8; --cyan:#53f4ff; --blue:#3678ff;
+  --lav:#9e9bff; --pink:#ff8ed8; --gold:#ffd76a;
 }
-
-header[data-testid="stHeader"],
-footer,
-div[data-testid="stSidebarCollapseButton"],
-section[data-testid="stSidebar"],
-.stDeployButton {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-}
-
+* { font-family:'Pretendard', sans-serif !important; }
 .stApp {
-    background: linear-gradient(180deg, #F4F2FB 0%, #FAFBFF 100%) !important;
-    color: #27304A !important;
+  background: radial-gradient(circle at 15% 0%,rgba(54,120,255,.22),transparent 32%),
+              radial-gradient(circle at 90% 20%,rgba(158,155,255,.14),transparent 28%), var(--bg) !important;
+  color:var(--text) !important;
 }
-
-.main .block-container {
-    padding: 1.5rem 1rem 3rem !important;
-    max-width: 1400px !important;
+.main .block-container { padding:1.4rem 1rem 3rem !important; max-width:1400px !important; }
+header[data-testid="stHeader"], footer, div[data-testid="stSidebarCollapseButton"], section[data-testid="stSidebar"], .stDeployButton { display:none !important; }
+[data-testid="stVerticalBlock"] { gap:.8rem; }
+/* Pixel-game panels: square corners, layered borders, crisp shadows */
+.app-header,.app-card,.countdown-box,div[data-testid="stForm"] {
+  border-radius:4px !important; border:2px solid var(--line) !important;
+  box-shadow:4px 4px 0 rgba(2,7,25,.8), inset 0 0 0 2px rgba(83,244,255,.05) !important;
 }
-
-.stButton > button,
-div[data-testid="stFormSubmitButton"] > button,
-div[data-testid="stDownloadButton"] > button {
-    background: #7771D8 !important;
-    color: #FFFFFF !important;
-    font-size: 1rem !important;
-    font-weight: 750 !important;
-    border-radius: 12px !important;
-    border: 1px solid #7771D8 !important;
-    padding: 0.75rem 1.1rem !important;
-    box-shadow: 0 5px 14px rgba(119, 113, 216, 0.16) !important;
-    width: 100% !important;
-    transition: all 0.18s ease-in-out !important;
+.app-header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px 24px;
+  background:linear-gradient(100deg,#10245a,#0b1740) !important; border-color:var(--cyan) !important; margin-bottom:22px; }
+.app-header-title { font-family:'Press Start 2P','Pretendard',sans-serif !important; font-size:1.05rem; font-weight:900; color:#f3f7ff !important; display:flex; align-items:center; gap:12px; text-shadow:2px 2px 0 #2856a7; }
+.badge-chip { display:inline-flex; align-items:center; justify-content:center; background:#173b7d !important; color:var(--cyan) !important; border:2px solid #4d8dff; font-weight:800; font-size:.78rem; padding:8px 12px; border-radius:3px !important; white-space:nowrap; box-shadow:2px 2px 0 #07112f; }
+.app-card { background:linear-gradient(135deg,#10265a,#0b1941) !important; padding:20px; margin-bottom:14px; border-color:#315eaa !important; }
+.app-card-myteam { border-color:var(--pink) !important; background:linear-gradient(135deg,#20265f,#102b60) !important; box-shadow:4px 4px 0 #07112f, 0 0 0 2px rgba(255,142,216,.16) !important; }
+.point-label { display:flex; align-items:center; height:1.35rem; margin:0 0 .35rem 0; line-height:1.2; color:#bdd6ff !important; font-weight:800 !important; }
+.balance-field { width:100%; display:flex; flex-direction:column; gap:0; margin:0; padding:0; }
+.point-chip { background:#332e58 !important; color:var(--gold) !important; border:2px solid #d6ad4d !important; font-weight:900; padding:0 14px; border-radius:3px !important; font-size:.95rem; display:flex; align-items:center; justify-content:center; gap:7px; height:48px; width:100%; box-sizing:border-box; margin:0; white-space:nowrap; box-shadow:3px 3px 0 #07112f; }
+.tag-blue { display:inline-block; background:#123d75 !important; color:var(--cyan) !important; border:1px solid #53cfff; font-weight:800; font-size:.75rem; padding:4px 8px; border-radius:2px !important; }
+.stButton>button,div[data-testid="stFormSubmitButton"]>button,div[data-testid="stDownloadButton"]>button {
+  background:linear-gradient(180deg,#3678ff,#2456c8) !important; color:#fff !important; font-weight:900 !important;
+  border:2px solid #7defff !important; border-radius:3px !important; padding:.78rem 1rem !important; width:100% !important;
+  box-shadow:3px 3px 0 #06102d !important; transition:transform .12s ease,filter .12s ease !important;
 }
-
-.stButton > button:hover,
-div[data-testid="stFormSubmitButton"] > button:hover,
-div[data-testid="stDownloadButton"] > button:hover {
-    background: #625CC5 !important;
-    border-color: #625CC5 !important;
-    transform: translateY(-1px) !important;
+.stButton>button:hover,div[data-testid="stFormSubmitButton"]>button:hover,div[data-testid="stDownloadButton"]>button:hover { filter:brightness(1.15); transform:translate(-1px,-1px) !important; box-shadow:4px 4px 0 #06102d,0 0 14px rgba(83,244,255,.22) !important; }
+.stTextInput input,.stTextArea textarea,.stSelectbox div[data-baseweb="select"]>div,.stNumberInput input {
+  background:#081638 !important; color:var(--text) !important; border:2px solid #2c5798 !important; border-radius:3px !important; font-size:.95rem !important;
 }
-
-.stTextInput input,
-.stTextArea textarea,
-.stSelectbox div[data-baseweb="select"] > div,
-.stNumberInput input {
-    background-color: #FFFFFF !important;
-    color: #27304A !important;
-    border: 1px solid #E0E2EF !important;
-    border-radius: 10px !important;
-    font-size: 0.95rem !important;
-}
-
-.stTextInput input:focus,
-.stTextArea textarea:focus,
-.stNumberInput input:focus {
-    border-color: #8983E6 !important;
-    box-shadow: 0 0 0 3px rgba(137, 131, 230, 0.13) !important;
-}
-
-.stTextInput input::placeholder,
-.stTextArea textarea::placeholder {
-    color: #A4A8BB !important;
-}
-
-label {
-    color: #505875 !important;
-    font-weight: 700 !important;
-    font-size: 0.9rem !important;
-}
-
-div[data-testid="stCaptionContainer"] {
-    color: #7A8199 !important;
-}
-
-hr {
-    border-color: #E4E3F0 !important;
-    margin: 1.6rem 0 !important;
-}
-
-.app-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    background: rgba(255,255,255,0.94);
-    padding: 22px 26px;
-    border-radius: 24px;
-    border: 1px solid #E2DFF4;
-    box-shadow: 0 8px 28px rgba(50, 45, 100, 0.045);
-    margin-bottom: 24px;
-}
-
-.app-header-title {
-    font-size: 1.55rem;
-    font-weight: 900;
-    color: #282747;
-    letter-spacing: -0.65px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.badge-chip {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #F0EEFC;
-    color: #6E68C9;
-    font-weight: 800;
-    font-size: 0.78rem;
-    padding: 8px 13px;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-
-.app-card {
-    background: #FFFFFF;
-    border-radius: 18px;
-    padding: 21px;
-    margin-bottom: 14px;
-    border: 1px solid #E8E8F2;
-    box-shadow: 0 6px 18px rgba(45, 43, 86, 0.045);
-}
-
-.app-card-myteam {
-    border: 1.5px solid #8D86E7 !important;
-    background: #FAF9FF !important;
-}
-
-.point-label {
-    display: flex;
-    align-items: center;
-    height: 1.5rem;
-    margin-bottom: 0.5rem;
-    color: #505875;
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-
-.point-chip {
-    background: #FFF8E8;
-    color: #B7791F;
-    border: 1px solid #F2DFB5;
-    font-weight: 800;
-    padding: 0 16px;
-    border-radius: 10px;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    height: 48px;
-    width: 100%;
-    box-sizing: border-box;
-    margin: 0;
-    white-space: nowrap;
-}
-
-.tag-blue {
-    display: inline-block;
-    background: #EEF3FF;
-    color: #5D70B8;
-    font-weight: 800;
-    font-size: 0.75rem;
-    padding: 4px 9px;
-    border-radius: 7px;
-}
-
-.countdown-box {
-    text-align: center;
-    padding: 46px 20px;
-    background: #FFFFFF;
-    border-radius: 24px;
-    border: 1.5px solid #DCD8F7;
-    box-shadow: 0 12px 30px rgba(88, 80, 160, 0.09);
-    margin: 20px auto;
-    max-width: 680px;
-}
-
-.countdown-num {
-    font-size: 7rem;
-    font-weight: 900;
-    color: #7771D8;
-    line-height: 1;
-    margin: 14px 0;
-}
-
-.section-kicker {
-    color: #7771D8;
-    font-weight: 800;
-    font-size: 0.82rem;
-    letter-spacing: 0.04em;
-    margin-bottom: 4px;
-}
-
-@media (max-width: 760px) {
-    .app-header {
-        padding: 17px;
-        border-radius: 18px;
-        align-items: flex-start;
-        flex-direction: column;
-    }
-    .app-header-title {
-        font-size: 1.3rem;
-    }
-    .countdown-num {
-        font-size: 5rem;
-    }
-    .app-card {
-        padding: 16px;
-    }
-}
+.stTextInput input:focus,.stTextArea textarea:focus,.stNumberInput input:focus { border-color:var(--cyan) !important; box-shadow:0 0 0 1px var(--cyan) !important; }
+.stTextInput input::placeholder,.stTextArea textarea::placeholder { color:#7898ca !important; }
+label { color:#bdd6ff !important; font-weight:800 !important; font-size:.9rem !important; }
+div[data-testid="stCaptionContainer"] { color:var(--muted) !important; }
+.stMarkdown,.stMarkdown p,.stMarkdown li,[data-testid="stMarkdownContainer"] { color:inherit; }
+h1,h2,h3,h4 { color:#f2f7ff !important; letter-spacing:-.02em; }
+h1,h2,h3 { text-shadow:2px 2px 0 rgba(36,86,200,.55); }
+hr { border-color:#244b89 !important; margin:1.5rem 0 !important; }
+.countdown-box { text-align:center; padding:42px 20px; background:linear-gradient(135deg,#10275d,#0a1638) !important; border-color:var(--pink) !important; margin:20px auto; max-width:680px; }
+.countdown-num { font-family:'Press Start 2P',monospace !important; font-size:4.8rem; font-weight:900; color:var(--gold) !important; line-height:1.4; margin:18px 0; text-shadow:4px 4px 0 #a74b9a; }
+.stAlert { background:#102453 !important; border:2px solid #3566ad !important; border-radius:3px !important; color:var(--text) !important; }
+div[data-testid="stForm"] { background:rgba(9,24,59,.92) !important; border-color:#254b88 !important; padding:14px; }
+div[data-testid="stDataFrame"],div[data-testid="stTable"] { background:var(--panel) !important; }
+/* Inline HTML cards from the app also inherit the pixel palette */
+[style*="background:#FFFFFF"],[style*="background: #FFFFFF"],[style*="background:#101426"] { background:#0d204d !important; }
+[style*="color:#EAF4FF"],[style*="color: #EAF4FF"],[style*="color:#A9C3EA"],[style*="color:#9BBBE8"],[style*="color:#A9C3EA"] { color:#c5d9ff !important; }
+@media(max-width:760px) { .app-header { padding:16px; align-items:flex-start; flex-direction:column; } .app-header-title { font-size:.85rem; } .countdown-num { font-size:3.2rem; } .app-card { padding:15px; } }
 </style>
 """, unsafe_allow_html=True)
 
-SVG_HAMMER = """<svg width="27" height="27" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7 6.3L17.7 3.3C18.1 2.9 18.7 2.9 19.1 3.3L20.7 4.9C21.1 5.3 21.1 5.9 20.7 6.3L17.7 9.3M14.7 6.3L11.7 9.3M14.7 6.3L17.7 9.3M11.7 9.3L4.2 16.8C3.8 17.2 3.8 17.8 4.2 18.2L5.8 19.8C6.2 20.2 6.8 20.2 7.2 19.8L14.7 12.3M11.7 9.3L14.7 12.3" stroke="#7771D8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>"""
-SVG_STAR = """<svg width="20" height="20" viewBox="0 0 24 24" fill="#D6A64D" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>"""
+SVG_HAMMER = """<svg width="27" height="27" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14.7 6.3L17.7 3.3C18.1 2.9 18.7 2.9 19.1 3.3L20.7 4.9C21.1 5.3 21.1 5.9 20.7 6.3L17.7 9.3M14.7 6.3L11.7 9.3M14.7 6.3L17.7 9.3M11.7 9.3L4.2 16.8C3.8 17.2 3.8 17.8 4.2 18.2L5.8 19.8C6.2 20.2 6.8 20.2 7.2 19.8L14.7 12.3M11.7 9.3L14.7 12.3" stroke="#53F4FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>"""
+SVG_STAR = """<svg width="20" height="20" viewBox="0 0 24 24" fill="#FFD76A" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>"""
 
 # ---------------------------------------------------------
 # 2. SQLite DB 엔진
@@ -381,10 +218,10 @@ def live_sync_and_countdown():
         if remaining > 0:
             st.markdown(f"""
                 <div class="countdown-box">
-                    <h2 style="color:#282747; margin:0; font-size:1.5rem;">🔨 프로젝트 경매가 곧 시작됩니다!</h2>
-                    <p style="color:#7A8199; font-size:1.05rem; margin-top:8px;">다른 팀의 프로젝트를 살펴보고 응원할 준비를 해주세요.</p>
+                    <h2 style="color:#EAF4FF; margin:0; font-size:1.5rem;">🔨 프로젝트 경매가 곧 시작됩니다!</h2>
+                    <p style="color:#9BBBE8; font-size:1.05rem; margin-top:8px;">다른 팀의 프로젝트를 살펴보고 응원할 준비를 해주세요.</p>
                     <div class="countdown-num">{remaining}</div>
-                    <p style="color:#7771D8; font-weight:800; font-size:1.1rem;">초 후 실시간 입찰이 시작됩니다.</p>
+                    <p style="color:#53F4FF; font-weight:800; font-size:1.1rem;">초 후 실시간 입찰이 시작됩니다.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
@@ -400,11 +237,11 @@ def live_sync_and_countdown():
         remaining = max(0, int(5 - (time.time() - reveal_start)))
         if remaining > 0:
             st.markdown(f"""
-                <div class="countdown-box" style="border-color:#EBD9A9;">
-                    <h2 style="color:#282747; margin:0; font-size:1.5rem;">🎉 프로젝트 경매 마감!</h2>
-                    <p style="color:#7A8199; font-size:1.05rem; margin-top:8px;">팀별 투자 결과를 정리하고 있습니다.</p>
-                    <div class="countdown-num" style="color:#D6A64D;">{remaining}</div>
-                    <p style="color:#7771D8; font-weight:800; font-size:1.1rem;">초 후 최종 결과가 공개됩니다.</p>
+                <div class="countdown-box" style="border-color:#FF8ED8;">
+                    <h2 style="color:#EAF4FF; margin:0; font-size:1.5rem;">🎉 프로젝트 경매 마감!</h2>
+                    <p style="color:#9BBBE8; font-size:1.05rem; margin-top:8px;">팀별 투자 결과를 정리하고 있습니다.</p>
+                    <div class="countdown-num" style="color:#FFD76A;">{remaining}</div>
+                    <p style="color:#53F4FF; font-weight:800; font-size:1.1rem;">초 후 최종 결과가 공개됩니다.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:
@@ -461,9 +298,15 @@ else:
     my_balance = INITIAL_BALANCE
 
 with col_p3:
-    st.markdown("<div class='point-label'>보유 포인트</div>", unsafe_allow_html=True)
+    # 라벨과 포인트 칩을 하나의 HTML 블록으로 묶어 Streamlit 요소 간 간격 때문에
+    # 포인트 칸만 아래로 밀리는 현상을 방지합니다.
     st.markdown(
-        f"<div class='point-chip'>{SVG_STAR} {my_balance:,} P</div>",
+        f"""
+        <div class="balance-field">
+            <div class="point-label">보유 포인트</div>
+            <div class="point-chip">{SVG_STAR} {my_balance:,} P</div>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
@@ -543,13 +386,13 @@ if current_phase == "prep":
                 st.markdown(f"""
                     <div class="{card_class}">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
-                            <span style="font-weight:800; color:#7771D8; font-size:1.02rem;">{row['name']} {badge}</span>
+                            <span style="font-weight:800; color:#53F4FF; font-size:1.02rem;">{row['name']} {badge}</span>
                             <span class="tag-blue">프로젝트 소개</span>
                         </div>
-                        <div style="font-size:1.15rem; font-weight:850; color:#282747; margin-bottom:8px;">
+                        <div style="font-size:1.15rem; font-weight:850; color:#EAF4FF; margin-bottom:8px;">
                             {row['title']}
                         </div>
-                        <div style="color:#68718B; font-size:0.95rem; line-height:1.7; white-space:pre-wrap;">
+                        <div style="color:#A9C3EA; font-size:0.95rem; line-height:1.7; white-space:pre-wrap;">
                             {row['description']}
                         </div>
                     </div>
@@ -601,11 +444,11 @@ elif current_phase == "auction":
                 st.markdown(f"""
                     <div class="{card_class}">
                         <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px;">
-                            <span style="font-weight:800; color:#7771D8; font-size:1.02rem;">{row['name']} {badge_html}</span>
+                            <span style="font-weight:800; color:#53F4FF; font-size:1.02rem;">{row['name']} {badge_html}</span>
                             <span class="point-chip" style="font-size:0.82rem; padding:5px 10px; height:auto; width:auto;">누적 투자 {total_funding:,} P</span>
                         </div>
-                        <div style="font-size:1.2rem; font-weight:900; color:#282747; margin-bottom:8px;">{row['title']}</div>
-                        <div style="color:#68718B; font-size:0.95rem; line-height:1.7; margin-bottom:8px; white-space:pre-wrap;">{row['description']}</div>
+                        <div style="font-size:1.2rem; font-weight:900; color:#EAF4FF; margin-bottom:8px;">{row['title']}</div>
+                        <div style="color:#A9C3EA; font-size:0.95rem; line-height:1.7; margin-bottom:8px; white-space:pre-wrap;">{row['description']}</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -651,15 +494,15 @@ elif current_phase == "auction":
                 target_name = target_rows["name"].values[0] if not target_rows.empty else "프로젝트"
 
                 st.markdown(f"""
-                    <div style="background:#FFFFFF; border:1px solid #E8E8F2; padding:14px; border-radius:15px; margin-bottom:10px; box-shadow:0 4px 12px rgba(45,43,86,0.04);">
-                        <div style="font-size:0.85rem; color:#7A8199; display:flex; justify-content:space-between; gap:8px;">
-                            <span><strong style="color:#282747;">{bid['user_name']}</strong> ({bid['user_team']})</span>
+                    <div style="background:#101426; border:1px solid #29314F; padding:14px; border-radius:3px; margin-bottom:10px; box-shadow:0 0 14px rgba(0,245,255,0.05);">
+                        <div style="font-size:0.85rem; color:#9BBBE8; display:flex; justify-content:space-between; gap:8px;">
+                            <span><strong style="color:#EAF4FF;">{bid['user_name']}</strong> ({bid['user_team']})</span>
                             <span class="badge-chip">투자 완료</span>
                         </div>
-                        <div style="font-size:1.05rem; font-weight:900; color:#7771D8; margin:8px 0;">
+                        <div style="font-size:1.05rem; font-weight:900; color:#53F4FF; margin:8px 0;">
                             ➜ {target_name} · {bid['amount']:,} P
                         </div>
-                        <div style="color:#505875; font-size:0.9rem; line-height:1.6;">“{bid['feedback']}”</div>
+                        <div style="color:#A9C3EA; font-size:0.9rem; line-height:1.6;">“{bid['feedback']}”</div>
                     </div>
                 """, unsafe_allow_html=True)
 
@@ -698,7 +541,7 @@ elif current_phase == "finished":
             st.markdown(f"""
                 <div class="app-card" style="border-left:5px solid #8D86E7;">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-                        <span style="font-size:1.05rem; font-weight:800; color:#282747;">{rank}위 · {row['팀']} — {row['프로젝트']}</span>
+                        <span style="font-size:1.05rem; font-weight:800; color:#EAF4FF;">{rank}위 · {row['팀']} — {row['프로젝트']}</span>
                         <span class="point-chip" style="height:auto; width:auto; padding:8px 12px;">{row['총 투자액']:,} P</span>
                     </div>
                 </div>
@@ -713,9 +556,9 @@ elif current_phase == "finished":
         for idx, row in investor_df.reset_index(drop=True).head(3).iterrows():
             rank = idx + 1
             st.markdown(f"""
-                <div style="background:#FFFFFF; padding:15px; border-radius:14px; margin-bottom:10px; border:1px solid #E8E8F2; display:flex; justify-content:space-between; align-items:center; gap:12px;">
-                    <span><strong style="color:#7771D8;">{rank}위</strong> · {row['user_name']} ({row['user_team']})</span>
-                    <span style="font-weight:900; color:#282747;">총 {row['amount']:,} P 투자</span>
+                <div style="background:#101426; padding:15px; border-radius:3px; margin-bottom:10px; border:1px solid #29314F; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                    <span><strong style="color:#53F4FF;">{rank}위</strong> · {row['user_name']} ({row['user_team']})</span>
+                    <span style="font-weight:900; color:#EAF4FF;">총 {row['amount']:,} P 투자</span>
                 </div>
             """, unsafe_allow_html=True)
 
