@@ -19,60 +19,67 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 :root {
-  --bg:#07112f; --panel:#0c1d4a; --panel2:#10275c; --line:#2d5eb8;
-  --text:#eaf4ff; --muted:#9bbbe8; --cyan:#53f4ff; --blue:#3678ff;
-  --lav:#9e9bff; --pink:#ff8ed8; --gold:#ffd76a;
+  --sky:#dcecff; --sky2:#f4f8ff; --navy:#203b78; --navy2:#294c91;
+  --ink:#24365e; --muted:#687da7; --cream:#fffaf0; --cream2:#fff3d8;
+  --line:#8fa8d5; --blue:#477be7; --blue2:#6d8ff4; --lav:#a99ae9;
+  --gold:#f2b84b; --mint:#9bd9c7; --pink:#f3a6c7;
 }
-* { font-family:'Pretendard', sans-serif !important; }
+* { font-family:'Pretendard',sans-serif !important; }
 .stApp {
-  background: radial-gradient(circle at 15% 0%,rgba(54,120,255,.22),transparent 32%),
-              radial-gradient(circle at 90% 20%,rgba(158,155,255,.14),transparent 28%), var(--bg) !important;
-  color:var(--text) !important;
+  color:var(--ink) !important;
+  background:
+    radial-gradient(ellipse at 12% 8%,rgba(255,255,255,.94),transparent 28%),
+    radial-gradient(ellipse at 90% 14%,rgba(173,211,255,.72),transparent 28%),
+    linear-gradient(180deg,#d9eaff 0%,#eef5ff 45%,#e5efff 100%) !important;
 }
-.main .block-container { padding:1.4rem 1rem 3rem !important; max-width:1400px !important; }
+.main .block-container { padding:1.25rem 1.25rem 3rem !important; max-width:1500px !important; }
 header[data-testid="stHeader"], footer, div[data-testid="stSidebarCollapseButton"], section[data-testid="stSidebar"], .stDeployButton { display:none !important; }
 [data-testid="stVerticalBlock"] { gap:.8rem; }
-/* Pixel-game panels: square corners, layered borders, crisp shadows */
+/* RPG window frames: creamy parchment, pixel-like double borders, soft toy-box shadows */
 .app-header,.app-card,.countdown-box,div[data-testid="stForm"] {
-  border-radius:4px !important; border:2px solid var(--line) !important;
-  box-shadow:4px 4px 0 rgba(2,7,25,.8), inset 0 0 0 2px rgba(83,244,255,.05) !important;
+  border:3px solid var(--line) !important; border-radius:7px !important;
+  box-shadow:4px 4px 0 rgba(49,76,132,.18), inset 0 0 0 2px rgba(255,255,255,.9) !important;
 }
-.app-header { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px 24px;
-  background:linear-gradient(100deg,#10245a,#0b1740) !important; border-color:var(--cyan) !important; margin-bottom:22px; }
-.app-header-title { font-family:'Press Start 2P','Pretendard',sans-serif !important; font-size:1.05rem; font-weight:900; color:#f3f7ff !important; display:flex; align-items:center; gap:12px; text-shadow:2px 2px 0 #2856a7; }
-.badge-chip { display:inline-flex; align-items:center; justify-content:center; background:#173b7d !important; color:var(--cyan) !important; border:2px solid #4d8dff; font-weight:800; font-size:.78rem; padding:8px 12px; border-radius:3px !important; white-space:nowrap; box-shadow:2px 2px 0 #07112f; }
-.app-card { background:linear-gradient(135deg,#10265a,#0b1941) !important; padding:20px; margin-bottom:14px; border-color:#315eaa !important; }
-.app-card-myteam { border-color:var(--pink) !important; background:linear-gradient(135deg,#20265f,#102b60) !important; box-shadow:4px 4px 0 #07112f, 0 0 0 2px rgba(255,142,216,.16) !important; }
-.point-label { display:flex; align-items:center; height:1.35rem; margin:0 0 .35rem 0; line-height:1.2; color:#bdd6ff !important; font-weight:800 !important; }
+.app-header {
+  display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 24px;
+  background:linear-gradient(110deg,#233f83 0%,#315aa7 62%,#426fc1 100%) !important;
+  border-color:#91c7ff !important; margin-bottom:18px; color:#fff !important;
+}
+.app-header-title { font-size:1.35rem; font-weight:950; color:#fff !important; display:flex; align-items:center; gap:12px; letter-spacing:.01em; text-shadow:2px 2px 0 #162d63; }
+.badge-chip { display:inline-flex; align-items:center; justify-content:center; background:#fff0c9 !important; color:#70512a !important; border:2px solid #f0c36b; font-weight:850; font-size:.78rem; padding:8px 12px; border-radius:5px !important; white-space:nowrap; box-shadow:2px 2px 0 rgba(23,47,99,.2); }
+.app-card { background:linear-gradient(145deg,#fffdf7,#fff5df) !important; padding:19px; margin-bottom:14px; border-color:#b5c5e2 !important; color:var(--ink) !important; }
+.app-card-myteam { border-color:#7f9af0 !important; background:linear-gradient(145deg,#f0f4ff,#fff8e9) !important; box-shadow:4px 4px 0 rgba(64,93,163,.18), inset 0 0 0 2px #fff !important; }
+.point-label { display:flex; align-items:center; min-height:1.35rem; margin:0 0 .35rem 0; line-height:1.2; color:#536b99 !important; font-weight:850 !important; }
 .balance-field { width:100%; display:flex; flex-direction:column; gap:0; margin:0; padding:0; }
-.point-chip { background:#332e58 !important; color:var(--gold) !important; border:2px solid #d6ad4d !important; font-weight:900; padding:0 14px; border-radius:3px !important; font-size:.95rem; display:flex; align-items:center; justify-content:center; gap:7px; height:48px; width:100%; box-sizing:border-box; margin:0; white-space:nowrap; box-shadow:3px 3px 0 #07112f; }
-.tag-blue { display:inline-block; background:#123d75 !important; color:var(--cyan) !important; border:1px solid #53cfff; font-weight:800; font-size:.75rem; padding:4px 8px; border-radius:2px !important; }
+.point-chip { background:#fff1ce !important; color:#99631b !important; border:2px solid #f1cf85 !important; font-weight:950; padding:0 12px; border-radius:5px !important; font-size:.95rem; display:flex; align-items:center; justify-content:center; gap:7px; height:48px; width:100%; box-sizing:border-box; margin:0; white-space:nowrap; box-shadow:2px 2px 0 rgba(151,112,46,.12); }
+.tag-blue { display:inline-block; background:#e4edff !important; color:#4264b3 !important; border:1px solid #a9bee9; font-weight:850; font-size:.75rem; padding:4px 8px; border-radius:4px !important; }
 .stButton>button,div[data-testid="stFormSubmitButton"]>button,div[data-testid="stDownloadButton"]>button {
-  background:linear-gradient(180deg,#3678ff,#2456c8) !important; color:#fff !important; font-weight:900 !important;
-  border:2px solid #7defff !important; border-radius:3px !important; padding:.78rem 1rem !important; width:100% !important;
-  box-shadow:3px 3px 0 #06102d !important; transition:transform .12s ease,filter .12s ease !important;
+  background:linear-gradient(180deg,#8c80ed 0%,#655cce 100%) !important; color:#fff !important; font-weight:900 !important;
+  border:2px solid #c2bbff !important; border-radius:5px !important; padding:.78rem 1rem !important; width:100% !important;
+  box-shadow:3px 3px 0 rgba(53,66,131,.22) !important; transition:transform .12s ease,filter .12s ease !important;
 }
-.stButton>button:hover,div[data-testid="stFormSubmitButton"]>button:hover,div[data-testid="stDownloadButton"]>button:hover { filter:brightness(1.15); transform:translate(-1px,-1px) !important; box-shadow:4px 4px 0 #06102d,0 0 14px rgba(83,244,255,.22) !important; }
+.stButton>button:hover,div[data-testid="stFormSubmitButton"]>button:hover,div[data-testid="stDownloadButton"]>button:hover { filter:brightness(1.06); transform:translateY(-1px) !important; box-shadow:3px 4px 0 rgba(53,66,131,.22) !important; }
 .stTextInput input,.stTextArea textarea,.stSelectbox div[data-baseweb="select"]>div,.stNumberInput input {
-  background:#081638 !important; color:var(--text) !important; border:2px solid #2c5798 !important; border-radius:3px !important; font-size:.95rem !important;
+  background:#fffdf8 !important; color:#293b64 !important; border:2px solid #d5dfef !important; border-radius:5px !important; font-size:.95rem !important;
 }
-.stTextInput input:focus,.stTextArea textarea:focus,.stNumberInput input:focus { border-color:var(--cyan) !important; box-shadow:0 0 0 1px var(--cyan) !important; }
-.stTextInput input::placeholder,.stTextArea textarea::placeholder { color:#7898ca !important; }
-label { color:#bdd6ff !important; font-weight:800 !important; font-size:.9rem !important; }
+.stTextInput input:focus,.stTextArea textarea:focus,.stNumberInput input:focus { border-color:#8a9fe7 !important; box-shadow:0 0 0 2px rgba(138,159,231,.16) !important; }
+.stTextInput input::placeholder,.stTextArea textarea::placeholder { color:#9aa9c5 !important; }
+label { color:#536b99 !important; font-weight:850 !important; font-size:.9rem !important; }
 div[data-testid="stCaptionContainer"] { color:var(--muted) !important; }
 .stMarkdown,.stMarkdown p,.stMarkdown li,[data-testid="stMarkdownContainer"] { color:inherit; }
-h1,h2,h3,h4 { color:#f2f7ff !important; letter-spacing:-.02em; }
-h1,h2,h3 { text-shadow:2px 2px 0 rgba(36,86,200,.55); }
-hr { border-color:#244b89 !important; margin:1.5rem 0 !important; }
-.countdown-box { text-align:center; padding:42px 20px; background:linear-gradient(135deg,#10275d,#0a1638) !important; border-color:var(--pink) !important; margin:20px auto; max-width:680px; }
-.countdown-num { font-family:'Press Start 2P',monospace !important; font-size:4.8rem; font-weight:900; color:var(--gold) !important; line-height:1.4; margin:18px 0; text-shadow:4px 4px 0 #a74b9a; }
-.stAlert { background:#102453 !important; border:2px solid #3566ad !important; border-radius:3px !important; color:var(--text) !important; }
-div[data-testid="stForm"] { background:rgba(9,24,59,.92) !important; border-color:#254b88 !important; padding:14px; }
-div[data-testid="stDataFrame"],div[data-testid="stTable"] { background:var(--panel) !important; }
-/* Inline HTML cards from the app also inherit the pixel palette */
-[style*="background:#FFFFFF"],[style*="background: #FFFFFF"],[style*="background:#101426"] { background:#0d204d !important; }
-[style*="color:#EAF4FF"],[style*="color: #EAF4FF"],[style*="color:#A9C3EA"],[style*="color:#9BBBE8"],[style*="color:#A9C3EA"] { color:#c5d9ff !important; }
-@media(max-width:760px) { .app-header { padding:16px; align-items:flex-start; flex-direction:column; } .app-header-title { font-size:.85rem; } .countdown-num { font-size:3.2rem; } .app-card { padding:15px; } }
+h1,h2,h3,h4 { color:#2c467d !important; letter-spacing:-.02em; }
+h1,h2,h3 { text-shadow:1px 1px 0 rgba(255,255,255,.9); }
+hr { border-color:#cbd8ee !important; margin:1.35rem 0 !important; }
+.countdown-box { text-align:center; padding:42px 20px; background:linear-gradient(145deg,#fffdf7,#edf4ff) !important; border-color:#9db5e2 !important; margin:20px auto; max-width:680px; }
+.countdown-box h2 { color:#2c467d !important; }
+.countdown-num { font-family:'Press Start 2P',monospace !important; font-size:4.2rem; font-weight:900; color:#f0b84c !important; line-height:1.4; margin:18px 0; text-shadow:3px 3px 0 #e9d5a2; }
+.stAlert { background:#fff9e9 !important; border:2px solid #e6c984 !important; border-radius:5px !important; color:#4b5f86 !important; }
+div[data-testid="stForm"] { background:rgba(255,251,240,.96) !important; border-color:#c2cfe7 !important; padding:14px; }
+div[data-testid="stDataFrame"],div[data-testid="stTable"] { background:#fffaf0 !important; }
+/* Harmonize older inline card styles with the new pastel RPG palette */
+[style*="background:#101426"],[style*="background: #101426"],[style*="background:#0d204d"],[style*="background: #0d204d"] { background:#fffaf0 !important; }
+[style*="color:#EAF4FF"],[style*="color: #EAF4FF"],[style*="color:#A9C3EA"],[style*="color:#9BBBE8"],[style*="color:#53F4FF"] { color:#526b9b !important; }
+@media(max-width:760px) { .app-header { padding:15px; align-items:flex-start; flex-direction:column; } .app-header-title { font-size:1rem; } .countdown-num { font-size:2.8rem; } .app-card { padding:14px; } }
 </style>
 """, unsafe_allow_html=True)
 
@@ -263,7 +270,7 @@ phase_badge_text = {
 
 st.markdown(f"""
     <div class="app-header">
-        <div class="app-header-title">{SVG_HAMMER} SONORUS AUCTION</div>
+        <div class="app-header-title">{SVG_HAMMER} SONORUS ✦ 아이디어 경매전</div>
         <div class="badge-chip">{phase_badge_text}</div>
     </div>
 """, unsafe_allow_html=True)
@@ -344,14 +351,14 @@ st.markdown("---")
 # STAGE 1: 프로젝트 활동 등록 및 소개
 # ---------------------------------------------------------
 if current_phase == "prep":
-    st.subheader("💡 오늘의 프로젝트 활동을 소개해보세요!")
-    st.caption("우리 팀의 탐구 과정과 활동을 공유하고, 다른 팀의 피드백과 투자를 받아보세요.")
+    st.subheader("🗺️ 오늘의 퀘스트 : 프로젝트 활동 소개")
+    st.caption("우리 팀의 탐구 여정을 소개하고, 다른 팀의 응원 포인트와 피드백을 받아보세요!")
 
     col_create, col_teams = st.columns([1, 2])
 
     with col_create:
         st.markdown("<div class='app-card'>", unsafe_allow_html=True)
-        st.markdown("### ✦ 프로젝트 활동 등록")
+        st.markdown("### 📜 퀘스트 기록 등록")
         with st.form(key="add_team_form"):
             new_team_name = st.text_input("팀 이름", placeholder="예: 소노루스 1팀")
             new_team_title = st.text_input("프로젝트명", placeholder="예: 온라인 소통과 청소년의 감정 탐구")
@@ -374,7 +381,7 @@ if current_phase == "prep":
         st.markdown("</div>", unsafe_allow_html=True)
 
     with col_teams:
-        st.markdown("### 📋 등록된 프로젝트 목록")
+        st.markdown("### 🧳 등록된 프로젝트 목록")
         if teams_df.empty:
             st.info("아직 등록된 프로젝트가 없습니다. 왼쪽에서 우리 팀의 활동을 소개해 주세요.")
         else:
@@ -424,7 +431,7 @@ elif current_phase == "countdown":
 # ---------------------------------------------------------
 elif current_phase == "auction":
     live_sync_and_countdown()
-    st.subheader("🔨 실시간 프로젝트 경매")
+    st.subheader("⚔️ 실시간 프로젝트 경매")
     st.caption("다른 팀의 프로젝트 활동에 포인트를 투자하고, 도움이 되는 피드백을 남겨보세요.")
 
     col_auction, col_feed = st.columns([2, 1])
@@ -517,7 +524,7 @@ elif current_phase == "result_reveal":
 # ---------------------------------------------------------
 elif current_phase == "finished":
     live_sync_and_countdown()
-    st.subheader("🏆 프로젝트 투자 결과")
+    st.subheader("🏆 퀘스트 클리어 결과")
 
     funding_summary = []
     for _, row in teams_df.iterrows():
